@@ -195,7 +195,7 @@ function get_cat()
     $line = $rs['line'];
 
     if ($line == '100') {
-        $sql = "SELECT * FROM `parent` WHERE `pos` !=0 ORDER BY `ordered` ASC";
+        $sql = "SELECT * FROM `parent` WHERE 1 ORDER BY `ordered` ASC";
     } else {
         $sql = "SELECT * FROM `parent` WHERE `pos` !=0 AND `line` = " . $line . " OR `pos` !=0 AND `line` = 3 ORDER BY `ordered` ASC";
     }
@@ -213,6 +213,15 @@ function get_cat()
 function get_prod($cat)
 {
     db();
+
+    $u = $_COOKIE['uid'];
+    $a = "SELECT * FROM `customers` WHERE `uid` =" . $u;
+    $b = mysqli_query($GLOBALS['conn'], $a);
+    $rs = mysqli_fetch_assoc($b);
+    $line = $rs['line'];
+
+
+
     echo '<div id="all_prod">';
     $sql = "SELECT * FROM `prod` WHERE `parent` =" . $cat . " ORDER BY `name` ASC";
     $resultiq = mysqli_query($GLOBALS['conn'], $sql);
@@ -250,6 +259,13 @@ function get_prod($cat)
         if ($tester_box == '0') {
             $tb = 'disabled';
         } else {
+            $tb = '';
+        }
+
+        if ($line == 100) {
+            $ps = '';
+            $ps_color = '#525254';
+            $ob = '';
             $tb = '';
         }
 
@@ -482,6 +498,8 @@ function get_factor($factor_id)
             $tester = $r['tester'];
             $total = $r['price_total'];
             $pay = $r['price_pay'];
+            $extra_less = $r['extra_less'] / 100;
+            $extra_add = $r['extra_add'] / 100;
 
             $GLOBALS['sum_total'] += (intval($total) * intval($tedad));
             $GLOBALS['sum_less'] += (intval($total) * intval($offer));
@@ -492,6 +510,8 @@ function get_factor($factor_id)
             $cbd_extract[$factor_id][$i]['tester'] = $tester;
             $cbd_extract[$factor_id][$i]['total'] = $total;
             $cbd_extract[$factor_id][$i]['pay'] = $pay;
+            $cbd_extract[$factor_id][$i]['extra_less'] = $extra_less;
+            $cbd_extract[$factor_id][$i]['extra_add'] = $extra_add;
 
             $sqlb = "SELECT * FROM cbd WHERE factor_id=" . $factor_id;
             $resb = mysqli_query($GLOBALS['conn'], $sqlb);
@@ -1339,12 +1359,11 @@ function search_customer($text)
     }
 }
 
-function get_store_factor($limit)
+function get_store_factor($limit, $start_date)
 {
     $result_arr = [];
-
     db();
-    $sql = "SELECT * FROM `cbd` WHERE `accept` IS NOT NULL AND `accept_time` LIKE '%___________________,___________________,___________________,%' AND `store` IS NULL ORDER BY `id` DESC LIMIT 0, $limit";
+    $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $start_date . "0000000000000000 AND `accept_time` LIKE '%___________________,___________________,%___________________,' AND `del_pos` = 0 AND `store_pos` = 0 ORDER BY `id` ASC LIMIT 0,$limit";
     $r = mysqli_query($GLOBALS['conn'], $sql);
     if ($r) {
         $num = mysqli_num_rows($r);
@@ -1489,10 +1508,16 @@ function store($factor_id, $store_pos)
             $store_posi = 'تسویه نشد';
             break;
         case '6':
-            $store_posi = 'کسری فاکتور';
+            $store_posi = 'فاکتور کسری';
             break;
         case '7':
-            $store_posi = 'مرجوعی فاکتور';
+            $store_posi = 'فاکتور مرجوعی';
+            break;
+        case '8':
+            $store_posi = 'فاکتور بلاتکلیف';
+            break;
+        case '9':
+            $store_posi = 'فاکتور کنسل شد';
             break;
     }
 
@@ -1504,7 +1529,7 @@ function store($factor_id, $store_pos)
     $q = "UPDATE `cbd` SET `store` = '$uid',`store_pos` = '$store_pos',`store_time` = '$time' WHERE `id` = '$factor_id'";
     $r = mysqli_query($GLOBALS['conn'], $q);
     if ($r) {
-        return "($store_posi . $time)";
+        return $store_posi . " | " . $time;
     } else {
         return 0;
     }

@@ -261,6 +261,8 @@ if ($c > 0) {
         $tedad = $factor_ext[0][$f_id][$i]['tedad'];
         $offer = $factor_ext[0][$f_id][$i]['offer'];
         $tester = $factor_ext[0][$f_id][$i]['tester'];
+        $extra_less = $factor_ext[0][$f_id][$i]['extra_less'];
+        $extra_add = $factor_ext[0][$f_id][$i]['extra_add'];
         $num_prod += $tedad;
         $num_offer += $offer;
         $num_tester += $tester;
@@ -268,6 +270,8 @@ if ($c > 0) {
         $sum_total += (($tedad + $offer + $tester) * $total * 10);
         $vat += ((($offer + $tester) * $total) * 10);
         $sum_pay += ($tedad * $total * 10);
+
+        $jm = ($offer + $tester) * $total * 10;
 
         $table .= '<tr>
     <td>' . ($i + 1) . '</td>
@@ -278,8 +282,8 @@ if ($c > 0) {
     <td>' . $tester . '</td>
     <td>' . sep3($total * 10) . '</td>
     <td>' . sep3(($tedad + $offer + $tester) * $total * 10) . '</td>
-    <td>' . sep3(($offer + $tester) * $total * 10) . '</td>
-    <td>' . sep3(($tedad) * $total * 10) . '</td>
+    <td>' . sep3(($jm) + ($extra_less * $jm)) . '</td>
+    <td>' . sep3((($tedad) * $total * 10) - ($extra_less * $jm)) . '</td>
     </tr>
     ';
     }

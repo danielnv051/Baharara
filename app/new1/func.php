@@ -482,6 +482,8 @@ function get_factor($factor_id)
             $tester = $r['tester'];
             $total = $r['price_total'];
             $pay = $r['price_pay'];
+            $extra_less = $r['extra_less'] / 100;
+            $extra_add = $r['extra_add'] / 100;
 
             $GLOBALS['sum_total'] += (intval($total) * intval($tedad));
             $GLOBALS['sum_less'] += (intval($total) * intval($offer));
@@ -492,6 +494,8 @@ function get_factor($factor_id)
             $cbd_extract[$factor_id][$i]['tester'] = $tester;
             $cbd_extract[$factor_id][$i]['total'] = $total;
             $cbd_extract[$factor_id][$i]['pay'] = $pay;
+            $cbd_extract[$factor_id][$i]['extra_less'] = $extra_less;
+            $cbd_extract[$factor_id][$i]['extra_add'] = $extra_add;
 
             $sqlb = "SELECT * FROM cbd WHERE factor_id=" . $factor_id;
             $resb = mysqli_query($GLOBALS['conn'], $sqlb);

@@ -210,6 +210,38 @@ error_reporting(0)
     #tarikh_saat h4 {
         margin-bottom: 0.4rem;
     }
+
+    .svg_ok {
+        background: #004D40;
+        opacity: 1;
+    }
+
+    .svg_no {
+        background: #B71C1C;
+        opacity: 1;
+    }
+
+    .okcancel div svg {
+        width: 2rem;
+        cursor: pointer;
+        height: 2rem;
+        box-shadow: 0px 0px 5px 1px silver;
+        padding: 0.2rem;
+        border-radius: 50%;
+    }
+
+    .okcancel div {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: space-evenly;
+        align-items: center;
+        margin: 1rem auto;
+    }
+
+    .okcancel {
+        width: 8rem;
+    }
 </style>
 <input type="hidden" id='f_id' value="<?php echo $_GET['f']; ?>" />
 <?php
@@ -285,6 +317,7 @@ $sum_pay = 0;
 $num_prod = 0;
 $num_offer = 0;
 $num_tester = 0;
+$sum_maliat = 0;
 
 if ($c > 0) {
     for ($i = 0; $i < $c; $i++) {
@@ -293,13 +326,11 @@ if ($c > 0) {
         $tedad = $factor_ext[0][$f_id][$i]['tedad'];
         $offer = $factor_ext[0][$f_id][$i]['offer'];
         $tester = $factor_ext[0][$f_id][$i]['tester'];
+        $extra_less = $factor_ext[0][$f_id][$i]['extra_less'];
+        $extra_add = $factor_ext[0][$f_id][$i]['extra_add'];
         $num_prod += $tedad;
         $num_offer += $offer;
         $num_tester += $tester;
-
-        $sum_total += (($tedad + $offer + $tester) * $total * 10);
-        $vat += ((($offer + $tester) * $total) * 10);
-        $sum_pay += ($tedad * $total * 10);
 
         $delpos = $factor_ext[0][$f_id][$i]['del_pos'];
 
@@ -319,21 +350,44 @@ if ($c > 0) {
         if (isset($_GET['store'])) {
             $tester_code = '';
             $dd = 'display:none;';
+            $vv = '';
+            $www = 'width:max-content';
         } else {
             $dd = '';
+            $vv = 'display:none;';
+            $www = 'width:100%';
         }
+
+        $jm = ($offer + $tester) * $total * 10; // takhfif
+        //$kl = ($tedad + $offer + $tester) * $total * 10; // jam kol
+        $kl = ($tedad + $offer + $tester) * $total * 10; // jam kol
+        $lesss = $extra_add - $extra_less;
+        $f_pay = $kl - ($extra_less * $kl);
+        $final_pay = $f_pay + ($f_pay * $extra_add);
+
+        $sum_total += $kl;
+        $vat += ($extra_less * $kl) + $jm;
+        $sum_pay += $final_pay;
+        $sum_maliat += ($kl - ($extra_less * $kl)) * $extra_add;
 
         $table .= '<tr>
     <td>' . ($i + 1) . '</td>
-    <td>' . $factor_ext[0][$f_id][$i]['prod_id'] . '</td>
+    <td style="' . $dd . '">' . $factor_ext[0][$f_id][$i]['prod_id'] . '</td>
+    <td style="' . $vv . '" class="okcancel no_print">
+        <div>
+            <?xml version="1.0" encoding="utf-8"?><svg class="ok" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="122.88px" height="122.88px" viewBox="0 0 122.88 122.88" enable-background="new 0 0 122.88 122.88" xml:space="preserve"><g><path fill="#6BBE66" d="M34.388,67.984c-0.286-0.308-0.542-0.638-0.762-0.981c-0.221-0.345-0.414-0.714-0.573-1.097 c-0.531-1.265-0.675-2.631-0.451-3.934c0.224-1.294,0.812-2.531,1.744-3.548l0.34-0.35c2.293-2.185,5.771-2.592,8.499-0.951 c0.39,0.233,0.762,0.51,1.109,0.827l0.034,0.031c1.931,1.852,5.198,4.881,7.343,6.79l1.841,1.651l22.532-23.635 c0.317-0.327,0.666-0.62,1.035-0.876c0.378-0.261,0.775-0.482,1.185-0.661c0.414-0.181,0.852-0.323,1.3-0.421 c0.447-0.099,0.903-0.155,1.356-0.165h0.026c0.451-0.005,0.893,0.027,1.341,0.103c0.437,0.074,0.876,0.193,1.333,0.369 c0.421,0.161,0.825,0.363,1.207,0.604c0.365,0.231,0.721,0.506,1.056,0.822l0.162,0.147c0.316,0.313,0.601,0.653,0.85,1.014 c0.256,0.369,0.475,0.766,0.652,1.178c0.183,0.414,0.325,0.852,0.424,1.299c0.1,0.439,0.154,0.895,0.165,1.36v0.23 c-0.004,0.399-0.042,0.804-0.114,1.204c-0.079,0.435-0.198,0.863-0.356,1.271c-0.16,0.418-0.365,0.825-0.607,1.21 c-0.238,0.377-0.518,0.739-0.832,1.07l-27.219,28.56c-0.32,0.342-0.663,0.642-1.022,0.898c-0.369,0.264-0.767,0.491-1.183,0.681 c-0.417,0.188-0.851,0.337-1.288,0.44c-0.435,0.104-0.889,0.166-1.35,0.187l-0.125,0.003c-0.423,0.009-0.84-0.016-1.241-0.078 l-0.102-0.02c-0.415-0.07-0.819-0.174-1.205-0.31c-0.421-0.15-0.833-0.343-1.226-0.575l-0.063-0.04 c-0.371-0.224-0.717-0.477-1.032-0.754l-0.063-0.06c-1.58-1.466-3.297-2.958-5.033-4.466c-3.007-2.613-7.178-6.382-9.678-9.02 L34.388,67.984L34.388,67.984z M61.44,0c16.96,0,32.328,6.883,43.453,17.987c11.104,11.125,17.986,26.493,17.986,43.453 c0,16.961-6.883,32.329-17.986,43.454C93.769,115.998,78.4,122.88,61.44,122.88c-16.961,0-32.329-6.882-43.454-17.986 C6.882,93.769,0,78.4,0,61.439C0,44.48,6.882,29.112,17.986,17.987C29.112,6.883,44.479,0,61.44,0L61.44,0z M96.899,25.981 C87.826,16.907,75.29,11.296,61.44,11.296c-13.851,0-26.387,5.611-35.46,14.685c-9.073,9.073-14.684,21.609-14.684,35.458 c0,13.851,5.611,26.387,14.684,35.46s21.609,14.685,35.46,14.685c13.85,0,26.386-5.611,35.459-14.685s14.684-21.609,14.684-35.46 C111.583,47.59,105.973,35.054,96.899,25.981L96.899,25.981z"/></g></svg>
+            <?xml version="1.0" encoding="utf-8"?><svg class="no" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="122.88px" height="122.879px" viewBox="0 0 122.88 122.879" enable-background="new 0 0 122.88 122.879" xml:space="preserve"><g><path fill="#FF4141" d="M61.44,0c16.96,0,32.328,6.882,43.453,17.986c11.104,11.125,17.986,26.494,17.986,43.453 c0,16.961-6.883,32.328-17.986,43.453C93.769,115.998,78.4,122.879,61.44,122.879c-16.96,0-32.329-6.881-43.454-17.986 C6.882,93.768,0,78.4,0,61.439C0,44.48,6.882,29.111,17.986,17.986C29.112,6.882,44.48,0,61.44,0L61.44,0z M73.452,39.152 c2.75-2.792,7.221-2.805,9.986-0.026c2.764,2.776,2.775,7.292,0.027,10.083L71.4,61.445l12.077,12.25 c2.728,2.77,2.689,7.256-0.081,10.021c-2.772,2.766-7.229,2.758-9.954-0.012L61.445,71.541L49.428,83.729 c-2.75,2.793-7.22,2.805-9.985,0.025c-2.763-2.775-2.776-7.291-0.026-10.082L51.48,61.435l-12.078-12.25 c-2.726-2.769-2.689-7.256,0.082-10.022c2.772-2.765,7.229-2.758,9.954,0.013L61.435,51.34L73.452,39.152L73.452,39.152z M96.899,25.98C87.826,16.907,75.29,11.296,61.44,11.296c-13.851,0-26.387,5.611-35.46,14.685 c-9.073,9.073-14.684,21.609-14.684,35.459s5.611,26.387,14.684,35.459c9.073,9.074,21.609,14.686,35.46,14.686 c13.85,0,26.386-5.611,35.459-14.686c9.073-9.072,14.684-21.609,14.684-35.459S105.973,35.054,96.899,25.98L96.899,25.98z"/></g></svg>
+        </div>
+    </td>
     <td style="text-align:right">' . $factor_ext[0][$f_id][$i]['parent'] . ' - ' . $factor_ext[0][$f_id][$i]['prod_name'] . '</td>
     <td>' . $tedad . '</td>
     <td>' . $offer . '</td>
     <td>' . $tester_code . $tester . '</td>
     <td style="' . $dd . '">' . sep3($total * 10) . '</td>
-    <td style="' . $dd . '">' . sep3(($tedad + $offer + $tester) * $total * 10) . '</td>
-    <td style="' . $dd . '">' . sep3(($offer + $tester) * $total * 10) . '</td>
-    <td style="' . $dd . '">' . sep3(($tedad) * $total * 10) . '</td>
+    <td style="' . $dd . '">' . sep3($kl) . '</td>
+    <td style="' . $dd . '">' . sep3(($extra_less * $kl) + $jm) . '</td>
+    <td style="' . $dd . '">' . sep3(($kl - $jm - ($extra_less * $kl)) * $extra_add) . '</td>
+    <td style="' . $dd . '">' . sep3($final_pay - $jm) . '</td>
     </tr>
     ';
     }
@@ -433,7 +487,7 @@ if (isset($hesabdari_signs)) {
 
 <div class="watermark"><?php echo $factor_type; ?></div>
 <div class="factor_detail">
-    <table class="header">
+    <table class="header" style="width:100%;">
         <tr>
             <th class="border_left" style="text-align: center;">
                 <div class="logos">
@@ -464,7 +518,7 @@ if (isset($hesabdari_signs)) {
             </th>
         </tr>
     </table>
-    <table class="header " style="direction: rtl; padding: 0.5rem;">
+    <table class="header " style="direction: rtl; padding: 0.5rem;width:100%;">
         <tr>
             <td style="width: 25%;">نام مشتری : </td>
             <th><span id="customer_name"><?php echo $factor_ext[0][$f_id][0]['shop_manager']; ?> (<?php echo $factor_ext[0][$f_id][0]['codem']; ?>)</span></th>
@@ -490,10 +544,11 @@ if (isset($hesabdari_signs)) {
             <th style="direction: ltr;"><?php echo $factor_ext[0][$f_id][0]['shop_tel']; ?></th>
         </tr>
     </table>
-    <table class="header factor_row" style="direction: rtl; padding: 0.5rem;">
+    <table class="header factor_row" style="direction: rtl; padding: 0.5rem;<?php echo $www; ?>">
         <tr style="background-color:transparent">
             <td>ردیف</td>
-            <td>کد کالا</td>
+            <td style="<?php echo $dd; ?>">کد کالا</td>
+            <td style="<?php echo $vv; ?>" class="no_print">وضعیت</td>
             <td>شرح</td>
             <td>تعداد</td>
             <td>آفر</td>
@@ -501,11 +556,17 @@ if (isset($hesabdari_signs)) {
             <td style="<?php echo $dd; ?>">مبلغ واحد</td>
             <td style="<?php echo $dd; ?>">مبلغ کل</td>
             <td style="<?php echo $dd; ?>">مبلغ تخفیف</td>
+            <td style="<?php echo $dd; ?>">مالیات ارزش افزوده</td>
             <td style="<?php echo $dd; ?>">جمع کل</td>
         </tr>
-        <?php echo $table; ?>
+        <?php echo $table;
+        if (strlen($dd) > 0) {
+            $ddd = 3;
+        } else {
+            $ddd = 3;
+        } ?>
         <tr style="background-color:transparent;">
-            <th colspan="3" style="text-align: center; background: #ededed;border: 1px solid silver;">
+            <th colspan="<?php echo $ddd; ?>" style="text-align: center; background: #ededed;border: 1px solid silver;">
                 جمع کل
             </th>
             <th colspan="1" style="border: 1px solid silver; font-size: 0.8rem;text-align: center;">
@@ -525,7 +586,10 @@ if (isset($hesabdari_signs)) {
                 <?php echo sep3($vat); ?>
             </th>
             <th colspan="1" style="border: 1px solid silver; font-size: 0.8rem;text-align: center; <?php echo $dd; ?>">
-                <?php echo sep3($sum_pay); ?>
+                <?php echo sep3($sum_maliat); ?>
+            </th>
+            <th colspan="1" style="border: 1px solid silver; font-size: 0.8rem;text-align: center; <?php echo $dd; ?>">
+                <?php echo sep3($sum_total - $vat + $sum_maliat); ?>
             </th>
 
         </tr>
@@ -550,28 +614,29 @@ if (isset($hesabdari_signs)) {
             </th>
         </tr>
         <tr style="background-color:transparent;">
-            <th colspan="6" style="text-align: right;padding:0.3rem">توضیحات سرپرست : <?php echo $factor_ext[0][$f_id][0]['supervisor_desc']; ?></th>
+            <th colspan="7" style="text-align: right;padding:0.3rem">توضیحات سرپرست : <?php echo $factor_ext[0][$f_id][0]['supervisor_desc']; ?></th>
             <th colspan="2" style="text-align: left;<?php echo $dd; ?>"> جمع فاکتور</th>
             <th colspan="2" style="<?php echo $dd; ?>;border: 1px solid silver; font-size: 0.8rem;text-align: center;">
-                <span><?php echo sep3($sum_pay); ?> ریال</span>
+                <span><?php echo sep3($sum_total - $vat + $sum_maliat); ?> ریال</span>
             </th>
         </tr>
         <tr style="background-color:transparent;">
-            <th colspan="6" style="text-align: right;padding:0.3rem">توضیحات مدیر فروش : <?php echo $factor_ext[0][$f_id][0]['manager_desc']; ?></th>
+            <th colspan="7" style="text-align: right;padding:0.3rem">توضیحات مدیر فروش : <?php echo $factor_ext[0][$f_id][0]['manager_desc']; ?></th>
             <th colspan="2" style="text-align: left; <?php echo $dd; ?>">تخفیف تسویه</th>
             <th colspan="2" style="border: 1px solid silver; font-size: 0.8rem;text-align: center;<?php echo $dd; ?>">
-                <span><?php echo sep3($sum_pay * $percent); ?> ریال</span>
+                <span><?php $aa = $sum_total - $vat + $sum_maliat;
+                        echo sep3(($aa * $percent)); ?> ریال</span>
             </th>
         </tr>
         <tr style="background-color:transparent; <?php echo $dd; ?>">
-            <th colspan="8" style="text-align: left;"> قابل پرداخت</th>
+            <th colspan="9" style="text-align: left;"> قابل پرداخت</th>
             <th colspan="2" style="border: 1px solid silver; font-size: 0.8rem;text-align: center;">
-                <span><?php echo sep3($sum_pay * (1 - $percent)); ?> ریال</span>
+                <span><?php echo sep3($aa - ($aa * $percent)); ?> ریال</span>
             </th>
         </tr>
     </table>
 
-    <table class="factor_row" style="direction: rtl;margin:0 auto;">
+    <table class="factor_row" style="direction: rtl;margin:0 auto;<?php echo $dd; ?>">
         <tr>
 
             <th style="width:14rem;text-align: center;">
@@ -670,6 +735,20 @@ if (isset($hesabdari_signs)) {
 <script src="../js/jquery.min.js"></script>
 
 <script>
+    $('svg.ok').click(function() {
+        $(this).addClass('svg_ok');
+        $(this).css('opacity', 1);
+        $(this).siblings('.no').css('opacity', '0.5');
+        $(this).siblings('.no').removeClass('svg_no');
+    });
+
+    $('svg.no').click(function() {
+        $(this).addClass('svg_no');
+        $(this).css('opacity', 1);
+        $(this).siblings('.ok').css('opacity', '0.5');
+        $(this).siblings('.ok').removeClass('svg_ok');
+    });
+
     desc = $('#factor_desc').text();
     customer_name = $('#customer_name').text();
     seller_name = $('#seller_name').text();
@@ -871,5 +950,11 @@ if (isset($hesabdari_signs)) {
         justify-content: center;
         flex-wrap: nowrap;
         gap: 1rem;
+    }
+
+    @media print {
+        .no_print {
+            display: none;
+        }
     }
 </style>
