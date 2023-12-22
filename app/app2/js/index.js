@@ -423,7 +423,7 @@ function save_order(x, y) {
 
   $.ajax({
     type: "GET",
-    url: "https://perfumeara.com/webapp/app1/server.php",
+    url: "https://perfumeara.com/webapp/app2/server.php",
     data: {
       factor: "ok",
       code: x,
@@ -449,7 +449,7 @@ function save_order(x, y) {
 
         $.ajax({
           type: "GET",
-          url: "https://perfumeara.com/webapp/app1/server.php",
+          url: "https://perfumeara.com/webapp/app2/server.php",
           data: {
             basket_update: 'ok',
             cat: y

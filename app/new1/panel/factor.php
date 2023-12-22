@@ -260,11 +260,15 @@ switch ($factor_ext[0][$f_id][0]['tasviye']) {
         $tasviye = 'نقدی پای بار (10%)';
         $percent = 0.10;
         break;
+    case 122:
+        $tasviye = 'نقدی پای بار (12%)';
+        $percent = 0.12;
+        break;
     case 1:
         $tasviye = 'چک 45 روزه (15%)';
         $percent = 0.15;
         break;
-    case 10:
+    case 12:
         $tasviye = 'چک 45 روزه (12%)';
         $percent = 0.12;
         break;

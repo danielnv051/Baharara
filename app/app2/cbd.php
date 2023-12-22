@@ -11,7 +11,8 @@ include_once('func.php');
 </div>
 <div class='items' style='display: block;'>
 
-    <?php if ($_COOKIE['uid'] == 100) {
+    <?php $x = getUidInfo($_COOKIE['uid']);
+    if ($_COOKIE['uid'] == 100) {
         echo "
 <fieldset class='hor' style='height: 30rem;display:block'>
     <legend>گزارش ویزیت امروز</legend>
@@ -55,10 +56,18 @@ include_once('func.php');
                 if ($company > 0) {
                 } else {
                 }
+
+                if ($x['line'] == '5') {
+                    $y =  "open_page('visit', 'c', 'ok', 1, true);";
+                } else {
+                    $y = "open_page('intelli_c_type','c','ok',1, true);";
+                }
                 ?>
-                <button class="btn btn-warning btn-half" id="visit" onclick="open_page('intelli_c_type','c','ok',1, true);">ثبت ویزیت </button>
+
+
             </div>
         </div>
+        <button class="btn btn-warning btn-half" id="visit" onclick="<?php echo $y; ?>">ثبت ویزیت </button>
         <button class="btn btn-info" id="return" onclick="open_page('enter')">بازگشت</button>
     </fieldset>
 </div>

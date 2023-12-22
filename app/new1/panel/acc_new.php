@@ -1094,7 +1094,7 @@ function payment_type_sep($payment_type = null, $pos = false)
                                         </tr>
                                     </table>
 
-                                    <table style="text-align: center;display:inline;float: right;border: 1px solid #000;margin-bottom:0.5rem;margin-top:0.5rem">
+                                    <table style="text-align: center;display:none;float: right;border: 1px solid #000;margin-bottom:0.5rem;margin-top:0.5rem">
                                         <?php manategh_($manategh); ?>
                                     </table>
 

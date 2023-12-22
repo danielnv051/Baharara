@@ -1,13 +1,45 @@
-<fieldset class='hor' style="height: inherit;" id="cdb_form">
-    <legend>ثبت گزارش ویزیت</legend>
+<?php
+$x = getUidInfo($_COOKIE['uid']);
+$line = $x['line'];
+if ($line == '5') {
+    $postCode = '
+    <span>کد پستی :</span>
+    <div>
+        <input type="tel" id="codem" class="form-control" />
+    </div>';
+    $shop__ = '
+    <span style="margin-top:1rem">نام فروشگاه : </span>
+    <div>
+        <input type="text" id="shop_name" class="form-control" value="مشتریان فضای مجازی(0490014)" disabled/>
+        <input type="hidden" id="loc_id" class="form-control" value="' . $_GET['loc'] . '" />
+        <input type="hidden" id="login_shop" class="form-control" value="' . date('Y-m-d H:i:s') . '" />
+        <input type="hidden" id="factor_id" class="form-control" value="' . date('ymd') . date('His') . time() . '" />
+    </div>';
+    $buy_ = '<button class="btn btn-warning" id="positive">+</button>';
+} else {
+    $postCode = '
+    <span>کدملی :</span>
+    <div>
+        <input type="tel" id="codem" class="form-control" />
+    </div>';
+    $shop__ = '
     <span style="margin-top:1rem">نام فروشگاه : </span>
     <div>
         <input type="text" id="shop_name" class="form-control" />
-        <input type="hidden" id="loc_id" class="form-control" value="<?php echo $_GET['loc']; ?>" />
-        <input type="hidden" id="login_shop" class="form-control" value="<?php echo date('Y-m-d H:i:s'); ?>" />
-        <input type="hidden" id="factor_id" class="form-control" value="<?php echo date('ymd') . date('His') . time(); ?>" />
-    </div>
-    <span>نام مسئول : </span>
+        <input type="hidden" id="loc_id" class="form-control" value="' . $_GET['loc'] . '" />
+        <input type="hidden" id="login_shop" class="form-control" value="' . date('Y-m-d H:i:s') . '" />
+        <input type="hidden" id="factor_id" class="form-control" value="' . date('ymd') . date('His') . time() . '" />
+    </div>';
+    $buy_ = '
+    <button class="btn btn-warning" id="positive">+</button>
+    <button class="btn btn-warning" id="negetive">-</button>
+    ';
+}
+?>
+<fieldset class='hor' style="height: inherit;" id="cdb_form">
+    <legend>ثبت گزارش ویزیت</legend>
+    <?php echo $shop__; ?>
+    <span>نام مشتری : </span>
     <div>
         <input type="text" id="shop_manager" class="form-control" />
     </div>
@@ -15,10 +47,9 @@
     <div style="margin-bottom: 1rem;">
         <input type="text" id="shop_addr" class="form-control" />
     </div>
-    <span>کدملی :</span>
-    <div>
-        <input type="tel" id="codem" class="form-control" />
-    </div>
+
+    <?php echo $postCode; ?>
+
     <span>تلفن :</span>
     <div>
         <input type="tel" id="shop_tel" class="form-control" />
@@ -31,8 +62,7 @@
     </div>
     <span>وضعیت خرید :</span>
     <div id="buy_pos">
-        <button class="btn btn-warning" id="positive">+</button>
-        <button class="btn btn-warning" id="negetive">-</button>
+        <?php echo $buy_; ?>
     </div>
     <button class="btn btn-info" id="return" onclick="open_page('cbd')">بازگشت</button>
 </fieldset>

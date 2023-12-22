@@ -1,11 +1,21 @@
 <?php
 require_once('public_css.php');
 include_once('func.php');
+$xx = getInfo($_COOKIE['uid']);
 ?>
 <style>
     option {
         direction: ltr;
         text-align: center;
+    }
+
+    #l1,
+    #l2 {
+        display: none;
+    }
+
+    #return_cat {
+        display: inline;
     }
 </style>
 <div class="show_factor" style="display: none;height: 100vh; overflow: auto;"></div>
@@ -21,14 +31,34 @@ include_once('func.php');
     <span for="tasviyex" style="width: 5rem;">نحوه تسویه را انتخاب کنید: </span>
     <div id="payment_type">
         <select id="tasviyex" class="form-control">
-            <optgroup label="تاپوتی">
-                <option value="20">نقدی پای بار (10%)</option>
-            </optgroup>
-            <optgroup label="پرفیوم آرا">
-                <option value="0">نقدی پای بار (15%)</option>
-                <option value="1">چک 45 روزه (15%)</option>
-                <option value="7">کتابی - نقدی پای بار (10%)</option>
-            </optgroup>
+            <option value='*'>نحوه تسویه را انتخاب کنید</option>
+            <?php
+            if ($xx['line'] == '100') {
+                echo '
+                <optgroup label="پرفیوم آرا" class="tasv">
+                    <option value="0">نقدی پای بار (15%)</option>
+                    <option value="1">چک 45 روزه (15%)</option>
+                    <option value="7">کتابی - نقدی پای بار (10%)</option>
+                </optgroup>
+                <optgroup label="تاپوتی" class="tasv">
+                    <option value="20">نقدی پای بار (10%)</option>
+                    <option value="12">چک 45 روزه (12%)</option>
+                </optgroup>';
+            } else if ($xx['line'] == '1') {
+                echo '
+                <optgroup label="پرفیوم آرا" class="tasv">
+                    <option value="0">نقدی پای بار (15%)</option>
+                    <option value="1">چک 45 روزه (15%)</option>
+                    <option value="7">کتابی - نقدی پای بار (10%)</option>
+                </optgroup>';
+            } else if ($xx['line'] == '2') {
+                echo '
+                <optgroup label="تاپوتی" class="tasv">
+                    <option value="20">نقدی پای بار (10%)</option>
+                    <option value="12">چک 45 روزه (12%)</option>
+                </optgroup>';
+            }
+            ?>
             <optgroup label="سایر">
                 <option value="300">تعویضی</option>
                 <option value="400">خرید شخصی(22%)</option>
@@ -46,7 +76,7 @@ include_once('func.php');
         </select>
         <!-- <input type="text" class="form-control" id="tasviyex"> -->
 
-        <?php $xx = getInfo($_COOKIE['uid']);
+        <?php
         $f_id = $xx['factor_id']; ?>
         <input type="hidden" value="<?php echo $f_id; ?>" id="f_id" />
     </div>
@@ -98,9 +128,9 @@ include_once('func.php');
 
     function final_save() {
         var factor_id = $('#f_id').val();
-        var tasviyex = $('#tasviyex').val();
+        var tasviyex = parseInt($('#tasviyex').val());
         var desc = $('#desc_factor').val();
-        if (tasviyex.length > 0) {
+        if (tasviyex > 0) {
             $.ajax({
                 type: "GET",
                 data: {
@@ -119,7 +149,7 @@ include_once('func.php');
                 }
             });
         } else {
-            alert('نحوه تسویه را وارد کنید');
+            alert('نحوه تسویه را انتخاب کنید');
         }
     }
 </script>

@@ -4,9 +4,6 @@
     }
 </style>
 
-<script>
-    document.getElementById('headTitle').innerHTML = 'پنل کاربری';
-</script>
 
 <?php
 if (isset($_COOKIE['uid'])) {

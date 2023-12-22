@@ -103,6 +103,17 @@ function getUid($tel)
     }
 }
 
+function getInfo1($uid)
+{
+    db();
+    $info = [];
+    $sql = "SELECT * FROM customers WHERE uid='" . $uid . "' ORDER BY id DESC";
+    $result = mysqli_query($GLOBALS['conn'], $sql);
+    if ($result) {
+        $row = mysqli_fetch_assoc($result);
+        return $row;
+    }
+}
 function getInfo($uid)
 {
     db();
@@ -126,6 +137,8 @@ function getInfo($uid)
             $info['codem'] = $x[8];
             $info['addr'] = $x[9];
             $info['sign'] = $x[10];
+            $info['line'] = $row['line'];
+            $info['family'] = $row['family'];
 
             if ($x[10]) {
                 $info['sign'] = $x[10];
@@ -196,6 +209,8 @@ function get_cat()
 
     if ($line == '100') {
         $sql = "SELECT * FROM `parent` WHERE 1 ORDER BY `ordered` ASC";
+    } else if ($line == '5') {
+        $sql = "SELECT * FROM `parent` WHERE `pos` !=0 AND `line` = '5' ORDER BY `ordered` ASC";
     } else {
         $sql = "SELECT * FROM `parent` WHERE `pos` !=0 AND `line` = " . $line . " OR `pos` !=0 AND `line` = 3 ORDER BY `ordered` ASC";
     }
@@ -223,7 +238,7 @@ function get_prod($cat)
 
 
     echo '<div id="all_prod">';
-    $sql = "SELECT * FROM `prod` WHERE `parent` =" . $cat . " ORDER BY `name` ASC";
+    $sql = "SELECT * FROM `prod` WHERE `parent` =" . $cat . " AND `fee`>0 ORDER BY `name` ASC";
     $resultiq = mysqli_query($GLOBALS['conn'], $sql);
     $num = mysqli_num_rows($resultiq);
     echo '<fieldset class="hor" style="height: fit-content; margin: 3.5rem auto -2rem;" class="factor_2">';
@@ -291,7 +306,7 @@ function get_prod($cat)
                 <td colspan="1" style="font-size: 0.9rem;text-align: center;">' . $name . ' ' . $msg . '</td>
                 <td colspan="1" style="text-align:left;font-size: 0.9rem;">قیمت:</td>
                 <td colspan="1" style="text-align: center;">
-                    <span id="e' . $code . '" style="font-size: 0.9rem;">' . $fee . '</span>
+                    <span id="e' . $code . '" style="font-size: 0.9rem;">' . ($fee) . '</span>
                     <span id="m' . $code . '" style="display:none">0</span>
                 </td>
                 <td colspan="1" style="text-align: right;">
@@ -367,10 +382,10 @@ function add_factor($uid, $factor_id, $cat_id, $prod_id, $tedad, $offer, $tester
         if ($num > 0) {
             $row = mysqli_fetch_assoc($result);
             $id = $row['id'];
-            $sq = "UPDATE factor SET tedad=" . $tedad . ",offer=" . $offer . ",tester=" . $tester . ",price_total=" . $price_total . ",price_pay=" . $price_pay . " WHERE id=" . $id;
-            $r = mysqli_query($GLOBALS['conn'], $sq);
+            $sqla = "UPDATE factor SET tedad='" . $tedad . "',offer='" . $offer . "',tester='" . $tester . "',price_total='" . $price_total . "',price_pay='" . $price_pay . "' WHERE id=" . $id;
+            $r = mysqli_query($GLOBALS['conn'], $sqla);
         } elseif ($num == 0) {
-            $sqla = "INSERT INTO `factor`(`id`, `uid`, `factor_id`, `cat_id`, `prod_id`, `tedad`, `offer`, `tester`, `price_total`, `price_pay`) VALUES(Null, $uid, $factor_id, $cat_id, $prod_id, $tedad, $offer, $tester, $price_total, $price_pay)";
+            $sqla = "INSERT INTO `factor`(`id`, `uid`, `factor_id`, `cat_id`, `prod_id`, `tedad`, `offer`, `tester`, `price_total`, `price_pay`) VALUES(Null, '$uid', '$factor_id', '$cat_id', '$prod_id', '$tedad', '$offer', '$tester', '$price_total', '$price_pay')";
             $resulta = mysqli_query($GLOBALS['conn'], $sqla);
         }
         return 1;

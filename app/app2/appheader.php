@@ -17,7 +17,13 @@
 <div class="app_title" style="height: -webkit-fill-available;display: flex;
     flex-direction: row;
     align-items: baseline;">
-    <p id="headTitle"></p>
+    <p id="headTitle">پنل کاربری آقای
+        <?php
+        include('func.php');
+        $x = getInfo1($_COOKIE['uid']);
+        echo $x['family'];
+        ?>
+    </p>
     <p id="ver" style="padding-left: 0.4rem;">ver: <span id="ver_num">1.01</span></p>
     <input type="hidden" id="pp" value="0">
     <!--     <div class="return_home" style="display:none">
