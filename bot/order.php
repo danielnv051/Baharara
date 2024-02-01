@@ -3,10 +3,18 @@ require_once 'functions.php';
 require_once 'jdf.php';
 
 $data = [];
-if ($_GET['date'] == '') {
-    $zaman = date("Y-m-d");
-} else {
-    $zaman = $_GET['date'];
+
+if (isset($_GET['date'])) {
+    if ($_GET['date'] == '') {
+        $zaman = date("Y-m-d");
+    } else {
+        $zaman = $_GET['date'];
+    }
+}
+
+if (isset($_GET['f'])) {
+    $from = $_GET['f'];
+    $to = $_GET['t'];
 }
 
 $bottle_100 = 0;
@@ -17,6 +25,8 @@ $b_30 = 0;
 $b_100 = 0;
 $vol = 0;
 $haml = 0;
+$sum = 0;
+
 
 function sefaresh($tedad, $prod)
 {
@@ -64,13 +74,35 @@ function sefaresh($tedad, $prod)
     return $sefaresh;
 }
 
-function order_info($zaman)
+function sep3($number)
+{
+
+    // english notation (default)
+    $english_format_number = number_format($number);
+    // 1,235
+
+    // French notation
+    $nombre_format_francais = number_format($number, 0, null, '/');
+    // 1 234,56
+
+    // english notation with a decimal point and without thousands seperator
+    $english_format_number = number_format($number, 2, '.', '');
+    // 1234.57
+
+    return $nombre_format_francais;
+}
+
+function order_info($zaman, $baze = false)
 {
     db();
     global $order_data;
     $order_data = [];
 
-    $sql = "SELECT * FROM `insta` WHERE zaman LIKE '%" . $zaman . "%' ORDER BY id DESC";
+    if ($baze == true) {
+        $sql = "SELECT * FROM `insta` WHERE `id`>= " . $GLOBALS['from'] . " AND `id`<= " . $GLOBALS['to'] . " ORDER BY `id` ASC";
+    } else {
+        $sql = "SELECT * FROM `insta` WHERE zaman LIKE '%" . $zaman . "%' ORDER BY id DESC";
+    }
     $result = mysqli_query($GLOBALS['conn'], $sql);
     $num = mysqli_num_rows($result);
     for ($i = 0; $i < $num; $i++) {
@@ -120,60 +152,62 @@ function order_info($zaman)
         $o_city = $row['city'];
         $o_tel = $row['tel_num'];
 
+        $GLOBALS['sum'] += $row['cost'];
+
         echo "<tr>
         <td>" . $id . "</td>
         <td>" . $row['full_name'] . "</td>
         <td>" . $row['state'] . "</td>
         <td>" . $row['city'] . "</td>
         <td>" . $row['addr'] . "</td>
-        <td>" . $peygiri . "</td>
         <td>" . $row['post_code'] . "</td>
         <td>" . $row['tel_num'] . "</td>
         <td><a href='" . $img_file . "' target='_blank'><img src='" . $img_file . "' style='width:100px;border: 1px solid silver; border-radius: 0.5rem; box-shadow: 1px 1px 5px #000;'/></a></td>
         <td>" . $vaght[1] . "</td>";
 
-        echo "<td>" . sefaresh($tedad, $prod) . "</td></tr>";
+        echo "<td>" . sefaresh($tedad, $prod) . "</td><td>" . sep3($row['cost']) . " ریال</td>
+        </tr>";
+        if ($baze == false) {
+            echo "<form method='get' action='order.php?date=" . $zaman . "'>
+            <tr style='background: #f0f8ff91;'>
+            <td>
+            *
+            <td>
+                <label for='factor'> صدور فاکتور " . $factor_input . "</label>
+            </td>
+            <td>
+                <label for='send'> ارسال سفارش " . $send_input . "</label>
+                <input type='hidden' value='" . $id . "' name='id' class='form-control'/>
+                <input type='hidden' value='" . $zaman . "' name='date' class='form-control'/>
+                <input type='hidden' value='" . $peygiri . "' name='factorNum' class='form-control'/>
+                <input type='hidden' value='" . $o_tel . "' name='tel' class='form-control'/>
+                <input type='hidden' value='" . $o_name . "' name='esm' class='form-control'/>
+                <input type='hidden' value='" . $o_city . "' name='dest' class='form-control'/>
+            </td>
+            <td>
+                <label for='send'> مرجوع "  . $reject_input . "</label>
+            </td>
+            <td>
+                <label for='peygiri'> کد پیگیری <input type='number' name='peygiri' id='peygiri' class='form-control' style='height: 60px; width: 100px;' value='" . $post_pos . "'/></label>
+            </td>
+            <td>
+                <label for='desc'> توضیحات <textarea name='desc' id='desc' class='form-control' style='width:80px; height:60px'>" . $desc_pos . "</textarea></label>
+            </td>
+            <td>100 <br>" . $GLOBALS['b_100'] . "</td>
 
-        echo "<form method='get' action='order.php?date=" . $zaman . "'>
-        <tr style='background: #f0f8ff91;'>
-        <td>
-        *
-        <td>
-            <label for='factor'> صدور فاکتور " . $factor_input . "</label>
-        </td>
-        <td>
-            <label for='send'> ارسال سفارش " . $send_input . "</label>
-            <input type='hidden' value='" . $id . "' name='id' class='form-control'/>
-            <input type='hidden' value='" . $zaman . "' name='date' class='form-control'/>
-            <input type='hidden' value='" . $peygiri . "' name='factorNum' class='form-control'/>
-            <input type='hidden' value='" . $o_tel . "' name='tel' class='form-control'/>
-            <input type='hidden' value='" . $o_name . "' name='esm' class='form-control'/>
-            <input type='hidden' value='" . $o_city . "' name='dest' class='form-control'/>
-        </td>
-        <td>
-            <label for='send'> مرجوع "  . $reject_input . "</label>
-        </td>
-        <td>
-            <label for='peygiri'> کد پیگیری <input type='number' name='peygiri' id='peygiri' class='form-control' style='height: 60px; width: 100px;' value='" . $post_pos . "'/></label>
-        </td>
-        <td>
-            <label for='desc'> توضیحات <textarea name='desc' id='desc' class='form-control' style='width:80px; height:60px'>" . $desc_pos . "</textarea></label>
-        </td>
-        <td>100 <br>" . $GLOBALS['b_100'] . "</td>
+            <td>30 <br>" . $GLOBALS['b_30'] . "</td>
 
-        <td>30 <br>" . $GLOBALS['b_30'] . "</td>
+            <td>5 <br>" . $GLOBALS['b_5'] . "</td>
 
-        <td>5 <br>" . $GLOBALS['b_5'] . "</td>
+            <td style='padding:0.2rem'>هزینه حمل<br>" . $GLOBALS['haml'] . "</td>
 
-        <td style='padding:0.2rem'>هزینه حمل<br>" . $GLOBALS['haml'] . "</td>
-
-        <td>
-            <input type='submit' value='ذخیره' class='btn btn-success'/>
-        </td>
-        </tr></form>";
+            <td>
+                <input type='submit' value='ذخیره' class='btn btn-success'/>
+            </td>
+            </tr></form>";
+        }
     }
 }
-
 
 ?>
 </table>
@@ -263,56 +297,21 @@ function order_info($zaman)
 
 <body class="login-area">
 
-    <!-- Preloader -->
-    <!--     <div id="preloader">
-        <div id="ctn-preloader" class="ont-preloader">
-            <div class="animation-preloader">
-                <div class="spinner"></div>
-            </div>
-
-
-            <div class="loader">
-                <div class="row">
-                    <div class="col-3 loader-section section-left">
-                        <div class="bg"></div>
-                    </div>
-                    <div class="col-3 loader-section section-left">
-                        <div class="bg"></div>
-                    </div>
-                    <div class="col-3 loader-section section-right">
-                        <div class="bg"></div>
-                    </div>
-                    <div class="col-3 loader-section section-right">
-                        <div class="bg"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div> -->
-    <!-- Preloader -->
-    <!-- ======================================
-    ******* Page Wrapper Area Start **********
-    ======================================= -->
     <div class="main-content- h-100vh">
         <div class="container-fluid h-100">
-            <!--             <div class="ba-logo" style="text-align: center;">
-                <img src="../img/logo-ba.png" title="logo" id="logo"
-                    style="max-width: 100px; height: auto; background: #01815f; border-radius: 50%; box-shadow: 0px 0px 6px #01815f4f; padding: 1rem;" />
-            </div> -->
             <div class="row h-100 align-items-center justify-content-center">
                 <div class="col-md-12 col-lg-12" style="width: inherit;">
                     <!-- Middle Box -->
                     <div class="middle-box">
                         <div class="card">
                             <div class="card-body p-4">
-
-                                <!-- Logo -->
-
                                 <h4 class="font-24 mb-1">سفارشات ثبت شده تاریخ :
                                     <?php
-                                    $tarikh = explode('-', $zaman);
-                                    $tt =  gregorian_to_jalali($tarikh[0], $tarikh[1], $tarikh[2]);
-                                    echo $tt[0] . '/' . $tt[1] . '/' . $tt[2];
+                                    if (isset($_GET['date'])) {
+                                        $tarikh = explode('-', $zaman);
+                                        $tt =  gregorian_to_jalali($tarikh[0], $tarikh[1], $tarikh[2]);
+                                        echo $tt[0] . '/' . $tt[1] . '/' . $tt[2];
+                                    }
                                     ?></h4>
                                 <p class="mb-30"></p>
                                 <table>
@@ -322,18 +321,27 @@ function order_info($zaman)
                                         <td>استان</td>
                                         <td>شهر</td>
                                         <td>آدرس</td>
-                                        <td>کد پیگیری</td>
                                         <td>کدپستی</td>
                                         <td>موبایل</td>
                                         <td>تصویر وایز وجه</td>
                                         <td>زمان ثبت</td>
                                         <td>لیست سفارشات</td>
+                                        <td>مبلغ</td>
                                     </tr>
-                                    <?php order_info($zaman);
+                                    <?php
+                                    if (isset($_GET['date'])) {
+                                        order_info($zaman);
+                                    } else {
+                                        order_info(null, true);
+                                    }
                                     $b_100 = 0;
                                     $b_30 = 0;
                                     $b_5 = 0;
                                     ?>
+
+                                    <tr>
+                                        <td colspan="11"><?php echo sep3($sum); ?> ریال</td>
+                                    </tr>
                                 </table>
 
 
@@ -343,10 +351,14 @@ function order_info($zaman)
                                 <form method="get" action="order.php">
                                     <label>تاریخ مورد نظر را وارد کنید: <input type="date" name="date" id="day" class="form-control"> </label>
                                     <button type="submit" class="btn btn-warning">نمایش</button>
-                                    <button><a href="https://barjio.com/label.php?date=<?php echo $_GET['date']; ?>" class="btn btn-primary">دانلود لیبل</a></button>
+                                    <button><a href="https://barjio.com/label.php?date=<?php if (isset($_GET['date'])) {
+                                                                                            echo $_GET['date'];
+                                                                                        } ?>" class="btn btn-primary">دانلود لیبل</a></button>
                                 </form>
                             </div>
-                            <input type="hidden" id="zaman" value="<?php echo $_GET['date']; ?> name=" date" />
+                            <input type="hidden" id="zaman" value="<?php if (isset($_GET['date'])) {
+                                                                        echo $_GET['date'];
+                                                                    } ?> name=" date" />
                         </div>
                     </div>
                     <div class="text-center">

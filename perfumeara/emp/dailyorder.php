@@ -12,6 +12,7 @@ $conn = mysqli_connect($host, $username, $password, $db);
 mysqli_set_charset($conn, "utf8");
 
 $data = [];
+$sum = 0;
 
 $qty = 0;
 $term_id = 0;
@@ -22,37 +23,30 @@ $bottle_100 = 0;
 $bottle_30 = 0;
 $bottle_5 = 0;
 
-function bottle($order_id)
+if (isset($_GET['f'])) {
+    $from = $_GET['f'];
+}
+
+if (isset($_GET['t'])) {
+    $to = $_GET['t'];
+}
+
+function sep3($number)
 {
-    $sql = "SELECT * FROM `wp_wc_order_product_lookup` WHERE order_id = " . $order_id;
-    $result = mysqli_query($GLOBALS['conn'], $sql);
-    $num = mysqli_num_rows($result);
-    for ($i = 0; $i < $num; $i++) {
 
-        $row = mysqli_fetch_assoc($result);
-        $var = $row['variation_id'];
-        $GLOBALS['qty'] = $row['product_qty'];
-        $tedad_var = $row['product_qty'];
-        $GLOBALS['sum_factor'] += $row['product_net_revenue'];
-        $GLOBALS['sum_haml'] += $row['shipping_amount'];
+    // english notation (default)
+    $english_format_number = number_format($number);
+    // 1,235
 
-        $sqli = "SELECT * FROM `wp_wc_product_attributes_lookup` WHERE product_id = " . $var;
-        $resulti = mysqli_query($GLOBALS['conn'], $sqli);
-        $rows = mysqli_fetch_assoc($resulti);
-        $term_id = $rows['term_id'];
+    // French notation
+    $nombre_format_francais = number_format($number, 0, null, '/');
+    // 1 234,56
 
-        switch ($term_id) {
-            case '52':
-                $GLOBALS['bottle_100'] += $tedad_var;
-                break;
-            case '53':
-                $GLOBALS['bottle_30'] += $tedad_var;
-                break;
-            case '1563':
-                $GLOBALS['bottle_5'] += $tedad_var;
-                break;
-        }
-    }
+    // english notation with a decimal point and without thousands seperator
+    $english_format_number = number_format($number, 2, '.', '');
+    // 1234.57
+
+    return $nombre_format_francais;
 }
 
 function order_info($id, $arg)
@@ -138,10 +132,15 @@ function order_info($id, $arg)
     ";
 }
 
-function order_id($zaman)
+function order_id($zaman, $baze = false)
 {
     $order_data = [];
-    $sql = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_paid_date' AND meta_value LIKE '" . $zaman . "%' ORDER BY meta_id DESC;";
+
+    if ($baze == false) {
+        $sql = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_paid_date' AND meta_value LIKE '" . $zaman . "%' ORDER BY meta_id ASC;";
+    } else {
+        $sql = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_paid_date' AND `post_id`>= " . $GLOBALS['from'] . " AND `post_id`<= " . $GLOBALS['to'] . " ORDER BY meta_id ASC;";
+    }
     $result = mysqli_query($GLOBALS['conn'], $sql);
     $nums = mysqli_num_rows($result);
     if ($nums > 0) {
@@ -188,15 +187,24 @@ function order_id($zaman)
                 'WAZ' => 'آذربایجان غربی',
             ];
 
+            $GLOBALS['sum'] += ($order_data['_order_total'] * 10);
+
+            $tt = explode(' ', $order_data['_paid_date']);
+            $ttq = explode('-', $tt[0]);
+            $tts =  gregorian_to_jalali($ttq[0], $ttq[1], $ttq[2]);
+            $zzz = $tts[0] . '/' . $tts[1] . '/' . $tts[2];
+
             echo "
                 <tr>
                     <td><a target='_blank' href='https://perfumeara.com/fa/ww/Easy_Installer/?invoice-pdf=" . $id . "'>" . $id . "</a></td>
+                    <td>" . $zzz . "</td>
                     <td>" . $order_data['_shipping_first_name'] . ' ' . $order_data['_shipping_last_name'] . "</td>
                     <td>" . $state[$order_data['_shipping_state']] . "</td>
                     <td>" . $order_data['_shipping_city'] . "</td>
                     <td>" . $order_data['_shipping_address_1'] . ' ' . $order_data['_shipping_address_2'] . "</td>
                     <td>" . $order_data['_shipping_postcode'] . "</td>
                     <td>" . $order_data['_billing_phone'] . "</td>
+                    <td>" . sep3($order_data['_order_total'] * 10) . "</td>
                 </tr>
                 ";
         }
@@ -330,18 +338,27 @@ function order_id($zaman)
                                 <table>
                                     <tr id="first_row">
                                         <td>کد</td>
+                                        <td>تاریخ</td>
                                         <td>نام و نام خانوادگی</td>
                                         <td>استان</td>
                                         <td>شهر</td>
                                         <td>آدرس</td>
                                         <td>کدپستی</td>
                                         <td>موبایل</td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan=""></td>
+                                        <td>مبلغ(ریال)</td>
                                     </tr>
                                     <?php $zaman = $_GET['date'];
-                                    order_id($zaman); ?>
+                                    if (isset($_GET['f'])) {
+                                        order_id($zaman, true);
+                                    } else {
+                                        order_id($zaman);
+                                    }
+                                    ?>
+                                    <tr>
+                                        <td colspan="8">
+                                            جمع کل: <?php echo sep3($sum); ?> ریال
+                                        </td>
+                                    </tr>
                                 </table>
 
 

@@ -45,7 +45,8 @@ if (isset($_POST['type']) && $_POST['type'] == 'register') {
             $_GET['shop_tel'],
             $_GET['customer_type'],
             $_GET['codem'],
-            $_GET['addr']
+            $_GET['addr'],
+            $_GET['insta_id']
         );
 
         $cbd_id = saveCBD($_COOKIE['uid'], $saveBase, $_GET['factor_id'], $_GET['login'], null, null, null, $_GET['buy_pos'], null, $_GET['codem'], $_GET['addr']);
@@ -62,17 +63,35 @@ if (isset($_POST['type']) && $_POST['type'] == 'register') {
 } elseif (isset($_GET['factor'])) {
     $code = $_GET['code'];
     $tedad = $_GET['tedad'];
-    $tester = $_GET['tester'];
-    $offer = $_GET['offer'];
+    if (isset($_GET['tester'])) {
+        $tester = $_GET['tester'];
+    } else {
+        $tester = 0;
+    }
+    if (isset($_GET['offer'])) {
+        $offer = $_GET['offer'];
+    } else {
+        $offer = 0;
+    }
+
     $base_fee = $_GET['base_fee'];
     $final_fee = $_GET['final_fee'];
+    $tester_type = $_GET['tester_type'];
+
+    if (isset($_GET['insta_off '])) {
+        $insta_off = $_GET['insta_off'];
+    } else {
+        $insta_off  = '';
+    }
+
     $info = getInfo($_COOKIE['uid']);
-    $z = add_factor($_COOKIE['uid'], $info['factor_id'], $_GET['cat'], $code, $tedad, $offer, $tester, $base_fee, $final_fee);
+    $z = add_factor($_COOKIE['uid'], $info['factor_id'], $_GET['cat'], $code, $tedad, $offer, $tester, $base_fee, $final_fee, $tester_type, $insta_off);
     echo $z;
 } elseif (isset($_GET['basket'])) {
     $code = $_GET['code'];
     $info = getInfo($_COOKIE['uid']);
-    $z = del_factor($info['factor_id'], $code);
+    $a1 = $info['factor_id'];
+    $z = del_factor("$a1", "$code");
     echo $z;
 } elseif (isset($_GET['final_pay'])) {
     $info = getInfo($_COOKIE['uid']);
@@ -82,7 +101,9 @@ if (isset($_POST['type']) && $_POST['type'] == 'register') {
     $factor_id = $_GET['factor_id'];
     $tasviye = $_GET['tasviye'];
     $desc = $_GET['desc'];
-    $s = saveTasviye($factor_id, $tasviye, $desc);
+    $f_type = $_GET['type'];
+    $extra_less = $_GET['extra_ls'];
+    $s = saveTasviye($factor_id, $tasviye, $desc, "$f_type", "$extra_less");
     echo $s;
 } elseif (isset($_GET['basket_update'])) {
     $info = getInfo($_COOKIE['uid']);
@@ -112,4 +133,37 @@ if (isset($_POST['type']) && $_POST['type'] == 'register') {
 } elseif (isset($_GET['store'])) {
     $x = store($_GET['factor_id'], $_GET['pos']);
     echo $x;
+} elseif (isset($_GET['masir'])) {
+    $x = get_masir($_GET['masir']);
+    echo $x;
+} elseif (isset($_POST['zaman'])) {
+    $timestamp = strtotime($_POST['zaman']);
+    $jalali_date = jdate("Y/m/d", $timestamp);
+    echo $jalali_date;
+} elseif (isset($_GET['mission'])) {
+    $xx = new_mission(
+        $_GET['uid'],
+        $_GET['mission'],
+        $_GET['route'],
+        $_GET['s_unix'],
+        $_GET['s_fa'],
+        $_GET['e_unix'],
+        $_GET['e_fa'],
+        $_GET['device'],
+        $_GET['vehicle'],
+        $_GET['p_2'],
+        $_GET['p_al'],
+        $_GET['p_3'],
+        $_GET['p_city']
+    );
+    echo $xx;
+} elseif (isset($_GET['delete_order'])) {
+    $f_id = $_GET['id'];
+    $xx = delete_order($f_id);
+    echo $xx;
+} elseif (isset($_GET['mojudi'])) {
+    $code = $_GET['code'];
+    $num = $_GET['num'];
+    $xx = mojudi("$code", "$num");
+    echo $xx;
 }

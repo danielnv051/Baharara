@@ -1,7 +1,6 @@
 <?php
 global $api;
-$api1 = 'service.wEM7HjVHSAsKcAYPBfNpEaqNuQqvSpHo3tvLNrsG';
-$api = 'service.1b54878ff5934f1e923829e4e4da922c';
+$api = 'service.wEM7HjVHSAsKcAYPBfNpEaqNuQqvSpHo3tvLNrsG';
 
 function address($lat, $lon)
 {

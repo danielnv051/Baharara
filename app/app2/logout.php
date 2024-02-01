@@ -2,5 +2,5 @@
 setcookie("uid", "", time() - 3600, "/", null, true);
 ?>
 <script>
-    open_page('login');
+    window.location.assign('.');
 </script>";

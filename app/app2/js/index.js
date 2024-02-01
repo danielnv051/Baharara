@@ -229,9 +229,12 @@ function order(btn_pos) {
     } else {
       loc = 0;
     }
+
+    let insta_id = $('#insta_id').val();
+
     $.ajax({
       type: "GET",
-      url: "https://perfumeara.com/webapp/app1/server.php",
+      url: "server.php",
       data: {
         order: "ok",
         shop_name: $("#shop_name").val(),
@@ -244,6 +247,7 @@ function order(btn_pos) {
         factor_id: $("#factor_id").val(),
         codem: $("#codem").val(),
         addr: $("#shop_addr").val(),
+        insta: insta_id,
       },
       success: function (data) {
         if (btn_pos == 1) {
@@ -420,7 +424,6 @@ function save_order(x, y) {
     $("#t" + x).val(0);
     cal_price_with_offer(x);
   }
-
   $.ajax({
     type: "GET",
     url: "https://perfumeara.com/webapp/app2/server.php",
@@ -470,7 +473,6 @@ function save_order(x, y) {
       }
     },
   });
-
 }
 
 function del_order(x) {

@@ -45,10 +45,6 @@
         text-align: left;
     }
 
-    #ttarget tr:nth-child(odd) {
-        background: #757575;
-    }
-
     .progress {
         height: 1.2rem;
         border-radius: 0.8rem;
@@ -176,9 +172,9 @@
     }
 
     .full_screen img {
-        width: 100vw;
+        width: 100%;
         height: 70vh;
-        margin: 5rem auto 0;
+        margin: 6rem auto;
     }
 
     .full_screen {
@@ -459,5 +455,21 @@
 
     #tasviye {
         font-size: 0.8rem;
+    }
+
+    div#factor_extra_less {
+        margin-top: 1rem;
+        border-top: 1px dashed silver;
+        padding: 0.4rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+
+    .final_factor {
+        margin-top: 4rem;
+        padding: 1rem;
+        color: #fff;
+        height: 90vh;
     }
 </style>

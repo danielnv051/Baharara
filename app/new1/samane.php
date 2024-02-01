@@ -12,7 +12,6 @@
     <style>
         fieldset {
             width: 100%;
-            height: 100%;
             overflow: hidden;
             margin-top: 3rem;
             cursor: auto;
@@ -95,6 +94,8 @@ $cbd = 'https://perfumeara.com/webapp/app_new/panel/visitors.php?g=cfcd208495d56
             y = 'https://barjio.com/order.php?date=' + today;
         } else if (x == 4) {
             y = 'https://perfumeara.com/webapp/app_new/panel/visitors.php?g=cfcd208495d565ef66e7dff9f98764d';
+        } else if (x == 5) {
+            y = 'https://perfumeara.com/webapp/app_new/panel/forms.php?g=cfcd208495d565ef66e7dff9f98764d';
         }
         window.open(y, '_blank');
     }
@@ -145,6 +146,14 @@ $cbd = 'https://perfumeara.com/webapp/app_new/panel/visitors.php?g=cfcd208495d56
                             </svg>
                         </div>
                         <div class="item-title">گزارش عملکرد بازاریاب ها به تفکیک بازاریاب و تاریخ(CBD)</div>
+                    </div>
+                    <div class="items" onclick="open_web(5)">
+                        <div class="item_logo">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-person-lines-fill" viewBox="0 0 16 16">
+                                <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2z" />
+                            </svg>
+                        </div>
+                        <div class="item-title">برگه ماموریت</div>
                     </div>
                 </div>
             </fieldset>

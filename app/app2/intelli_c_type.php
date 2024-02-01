@@ -1,3 +1,6 @@
+<?php
+include_once('func.php');
+?>
 <style>
     .result_pos {
         display: none;

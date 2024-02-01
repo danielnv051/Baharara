@@ -104,7 +104,7 @@ if (isset($_POST['type']) && $_POST['type'] == 'register') {
     $x = get_admin_sign($_GET['sign']);
     echo $x;
 } else if (isset($_GET['emza'])) {
-    $x = get_admin_pass($_GET['emza'], $_GET['factor_id']);
+    $x = get_admin_pass($_GET['emza'], $_GET['factor_id'], $_GET['permit'], $_GET['rule']);
     echo $x;
 } else if (isset($_GET['click_names'])) {
     $x = get_admin_desc($_GET['tozih'], $_GET['click_names'], $_GET['f_id']);
@@ -114,5 +114,8 @@ if (isset($_POST['type']) && $_POST['type'] == 'register') {
     echo $x;
 } elseif (isset($_GET['permission'])) {
     $x = permission($_GET['permission']);
+    echo $x;
+} elseif (isset($_GET['accept_'])) {
+    $x = get_paper_accept($_GET['ids'], $_GET['type'], $_GET['pass'], $_GET['signer']);
     echo $x;
 }

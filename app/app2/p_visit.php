@@ -2,7 +2,7 @@
     <legend>ثبت گزارش ویزیت</legend>
     <span style="margin-top:1rem">نتیجه ویزیت را ثبت کنید : </span>
     <div>
-        <textarea class="form-control" id="visit_text" style="height: 10rem;"></textarea>
+        <textarea class="form-control" id="visit_text" style="height: 10rem;"> </textarea>
 
         <div id="buy_pos">
             <button class="btn btn-warning" id="saveResult" onclick="saveResult()">ذخیره ویزیت</button>

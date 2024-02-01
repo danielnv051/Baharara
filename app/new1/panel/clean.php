@@ -19,7 +19,7 @@ for ($i = 0; $i < $num; $i++) {
         $sqlw = "UPDATE `cbd` SET `buy_pos` = '-' WHERE `cbd`.`id` =" . $row['id'];
         $resultw = mysqli_query($GLOBALS['conn'], $sqlw);
         if ($resultw) {
-            echo 'cbd: ' . $row['id'] . '    factor:' . $row['factor_id'];
+            echo 'cbd: ' . $row['id'] . '    factor:' . $row['factor_id'] . '<br/>';
         }
     }
 }

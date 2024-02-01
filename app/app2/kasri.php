@@ -5,9 +5,11 @@ include_once('func.php');
     <img src="" alt="" id="img_full">
 </div>
 
-
-<?php get_prod_kasri(); ?>
+<br />
+<br />
+<br />
 <button class="btn btn-info" id="return" onclick="open_page('enter')">بازگشت</button>
+<?php get_prod_kasri(); ?>
 
 <?php
 $back = 1;

@@ -14,6 +14,7 @@ $sum_offer_kol = 0;
 $sum_tester_kol = 0;
 
 $pish_id = 0;
+$line = 0;
 
 function db()
 {
@@ -465,6 +466,7 @@ function saveCBD($uid, $shop_id, $factor_id, $login, $logout, $result, $sign, $b
 function get_factor($factor_id)
 {
     $export = '';
+    $parent_group = '';
     $cbd_extract = [];
 
     db();
@@ -483,7 +485,7 @@ function get_factor($factor_id)
             $total = $r['price_total'];
             $pay = $r['price_pay'];
             $extra_less = $r['extra_less'] / 100;
-            $extra_add = $r['extra_add'] / 100;
+
 
             $GLOBALS['sum_total'] += (intval($total) * intval($tedad));
             $GLOBALS['sum_less'] += (intval($total) * intval($offer));
@@ -495,12 +497,14 @@ function get_factor($factor_id)
             $cbd_extract[$factor_id][$i]['total'] = $total;
             $cbd_extract[$factor_id][$i]['pay'] = $pay;
             $cbd_extract[$factor_id][$i]['extra_less'] = $extra_less;
-            $cbd_extract[$factor_id][$i]['extra_add'] = $extra_add;
 
             $sqlb = "SELECT * FROM cbd WHERE factor_id=" . $factor_id;
             $resb = mysqli_query($GLOBALS['conn'], $sqlb);
             $rb = mysqli_fetch_assoc($resb);
+            $auth = $rb['auth'];
             $pish_id = $rb['id'];
+            $ref_id = $rb['ref_id'];
+            $card = $rb['card_num'];
             $GLOBALS['pish_id'] = $pish_id;
             $uid = $rb['uid'];
             $shop_id = $rb['shop_id'];
@@ -516,7 +520,12 @@ function get_factor($factor_id)
             $supervisor_desc = $rb['supervisor_desc'];
             $manager_desc = $rb['manager_desc'];
             $del_pos = $rb['del_pos'];
+            $extra_add = $rb['extra_add'] / 100;
+            $extra_less = $rb['extra_less'] / 100;
 
+            $cbd_extract[$factor_id][$i]['extra_les'] = $extra_less;
+            $cbd_extract[$factor_id][$i]['auth'] = $auth;
+            $cbd_extract[$factor_id][$i]['extra_add'] = $extra_add;
             $cbd_extract[$factor_id][$i]['result'] = $natije;
             $cbd_extract[$factor_id][$i]['sign'] = $emza;
             $cbd_extract[$factor_id][$i]['tasviye'] = $tasviye;
@@ -530,6 +539,8 @@ function get_factor($factor_id)
             $cbd_extract[$factor_id][$i]['manager_desc'] = $manager_desc;
             $cbd_extract[$factor_id][$i]['supervisor_desc'] = $supervisor_desc;
             $cbd_extract[$factor_id][$i]['del_pos'] = $del_pos;
+            $cbd_extract[$factor_id][$i]['card'] = $card;
+            $cbd_extract[$factor_id][$i]['ref_id'] = $ref_id;
 
             $sqlc = "SELECT * FROM base WHERE id=" . $shop_id;
             $resc = mysqli_query($GLOBALS['conn'], $sqlc);
@@ -572,6 +583,7 @@ function get_factor($factor_id)
             $cbd_extract[$factor_id][$i]['shop_name'] = $rc['shop_name'];
             $cbd_extract[$factor_id][$i]['shop_manager'] = $rc['shop_manager'];
             $cbd_extract[$factor_id][$i]['shop_tel'] = $rc['tel'];
+            $cbd_extract[$factor_id][$i]['line'] = $tt['line'];
 
             if ($rc['type'] == 'old') {
                 $customer_type = 'قدیم';
@@ -595,16 +607,34 @@ function get_factor($factor_id)
             $rr = mysqli_fetch_assoc($bb);
             $short_name = $rr['short_name'];
 
-            $cbd_extract[$factor_id][$i]['parent'] = $short_name;
+            $cbd_extract[$factor_id][$i]['parent_name'] = $short_name;
+            $cbd_extract[$factor_id][$i]['parent_id'] = $parent;
 
-            $export .= '
-            <tr>
-                <td style="padding: 0.2rem;border: 1px solid silver;">' . $short_name . ' - ' . $prod_name . '</td>
-                <td style="padding: 0.2rem;border: 1px solid silver;">' . $tedad . '</td>
-                <td style="padding: 0.2rem;border: 1px solid silver;">' . $offer . '</td>
-                <td style="padding: 0.2rem;border: 1px solid silver;">' . $tester . '</td>
-            </tr>
-            ';
+            if ($parent_group == '' || $parent_group != $parent) {
+                $export .= '
+                <tr>
+                    <td colspan="11" class="parent_group">' . $short_name . '</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.2rem;border: 1px solid silver;">' . $short_name . ' - ' . $prod_name . '</td>
+                    <td style="padding: 0.2rem;border: 1px solid silver;">' . $tedad . '</td>
+                    <td style="padding: 0.2rem;border: 1px solid silver;">' . $offer . '</td>
+                    <td style="padding: 0.2rem;border: 1px solid silver;">' . $tester . '</td>
+                </tr>
+                ';
+                $parent_group = $parent;
+            } elseif ($parent_group == $parent) {
+                $export .= '
+                <tr>
+                    <td style="padding: 0.2rem;border: 1px solid silver;">' . $short_name . ' - ' . $prod_name . '</td>
+                    <td style="padding: 0.2rem;border: 1px solid silver;">' . $tedad . '</td>
+                    <td style="padding: 0.2rem;border: 1px solid silver;">' . $offer . '</td>
+                    <td style="padding: 0.2rem;border: 1px solid silver;">' . $tester . '</td>
+                </tr>
+                ';
+            } else {
+            }
+
 
             $GLOBALS['sum_tedad_kol'] += $tedad;
             $GLOBALS['sum_offer_kol'] += $offer;
@@ -984,37 +1014,83 @@ function get_admin_sign($uid)
     $sign = $rr['sign'];
     return $sign;
 }
-function get_admin_pass($password, $f_id)
+function get_admin_pass($password, $f_id, $permit, $rule)
 {
     db();
-    $sql = "SELECT * FROM `customers` WHERE `pass` = " . $password;
+    $sql = "SELECT * FROM `customers` WHERE `permit` = '" . $permit . "'";
     $r = mysqli_query($GLOBALS['conn'], $sql);
-    $numss = mysqli_num_rows($r);
     $rrs = mysqli_fetch_assoc($r);
-    $uid = $rrs['uid'];
+    $super = $rrs['super'];
+    $manager = $rrs['manager'];
+    $acc = $rrs['acc'];
+    $both = $rrs['both'];
 
-    if ($numss > 0) {
-        $sqli = "SELECT * FROM `cbd` WHERE `factor_id` = '" . $f_id . "'";
-        $ra = mysqli_query($GLOBALS['conn'], $sqli);
-        $rr = mysqli_fetch_assoc($ra);
-        $accept = $rr['accept'] . $uid . ',';
-        $zaman = date("Y-m-d H:i:s");
-        $accept_time = $rr['accept_time'] . $zaman . ',';
+    $sqli = "SELECT * FROM `customers` WHERE `pass` = '" . $password . "'";
+    $ri = mysqli_query($GLOBALS['conn'], $sqli);
+    $numssi = mysqli_num_rows($ri);
 
-        $sqlia = "UPDATE `cbd` SET `accept` = '" . $accept . "',`accept_time` = '" . $accept_time . "' WHERE `factor_id` = '" . $f_id . "'";
-        $raa = mysqli_query($GLOBALS['conn'], $sqlia);
-        if ($raa) {
-            return 1;
+
+    $pos = 0;
+    if ($numssi > 0) {
+        $rrsi = mysqli_fetch_assoc($ri);
+        $uidi = $rrsi['uid'];
+        $super_ = $rrsi['super'];
+        $manager_ = $rrsi['manager'];
+        $acc_ = $rrsi['acc'];
+        $both_ = $rrsi['both'];
+        switch ($rule) {
+            case 'supervisor_desc':
+                if ($super == $super_ && $super > 0) {
+                    $pos = 1;
+                } else {
+                    $pos = -1;
+                }
+                break;
+            case 'manager_desc':
+                if ($manager == $manager_ && $manager > 0) {
+                    $pos = 1;
+                } else {
+                    $pos = -1;
+                }
+                break;
+
+            case 'accountant_ok':
+                if ($acc == $acc && $acc > 0) {
+                    $pos = 1;
+                } else {
+                    $pos = -1;
+                }
+                break;
+        }
+
+        if ($pos == 1) {
+            $sqli = "SELECT * FROM `cbd` WHERE `factor_id` = '" . $f_id . "'";
+            $ra = mysqli_query($GLOBALS['conn'], $sqli);
+            $rr = mysqli_fetch_assoc($ra);
+            $accept = $rr['accept'] . $uidi . ',';
+            $zaman = date("Y-m-d H:i:s");
+            $accept_time = $rr['accept_time'] . $zaman . ',';
+
+            $sqlia = "UPDATE `cbd` SET `accept` = '" . $accept . "',`accept_time` = '" . $accept_time . "' WHERE `factor_id` = '" . $f_id . "'";
+            $raa = mysqli_query($GLOBALS['conn'], $sqlia);
+            if ($raa) {
+                if ($rule == 'accountant_ok') {
+                    sms("$f_id");
+                }
+                return $pos;
+            }
+        } else {
+            return $pos;
         }
     } else {
-        return 0;
+        return $pos;
     }
 }
 
 function get_admin_desc($desc, $owner, $f_id)
 {
     db();
-    $sqlia = "UPDATE `cbd` SET `" . $owner . "` = '" . $desc . "' WHERE `factor_id` = " . $f_id;
+    $sqlia = "UPDATE `cbd` SET `" . $owner . "` = '" . $desc . "' WHERE `factor_id` = '" . $f_id . "'";
     $raa = mysqli_query($GLOBALS['conn'], $sqlia);
     if ($raa) {
         return 1;
@@ -1389,4 +1465,180 @@ function permission($password)
     $tt = mysqli_fetch_assoc($ww);
     $p = $tt['super'] . ',' . $tt['manager'];
     return $p;
+}
+function PG($factor, $auth)
+{
+    db();
+    $uu = "UPDATE `cbd` SET `auth`='" . $auth . "' WHERE `id`=" . $factor;
+    $ww = mysqli_query($GLOBALS['conn'], $uu);
+    if ($ww) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+function getPG($auth)
+{
+    $sum = 0;
+    db();
+    $uu = "SELECT * FROM `cbd` WHERE `auth`='" . $auth . "'";
+    $ww = mysqli_query($GLOBALS['conn'], $uu);
+    if ($ww) {
+        $num = mysqli_num_rows($ww);
+        if ($num > 0) {
+            $row = mysqli_fetch_assoc($ww);
+            $factor_id = $row['factor_id'];
+            $id = $row['id'];
+
+            $uus = "SELECT * FROM `factor` WHERE `factor_id`=" . $factor_id;
+            $wws = mysqli_query($GLOBALS['conn'], $uus);
+            $n = mysqli_num_rows($wws);
+            for ($i = 0; $i < $n; $i++) {
+                $rows = mysqli_fetch_assoc($wws);
+                $num = $rows['tedad'];
+                $fee = $rows['price_pay'];
+                $sum += ($num * $fee);
+            }
+            return $sum . ',' . $id;
+        } else {
+            return 0;
+        }
+    } else {
+        return 0;
+    }
+}
+function setPG($auth, $card, $ref)
+{
+    $sum = 0;
+    db();
+    $uu = "SELECT * FROM `cbd` WHERE `auth`='" . $auth . "'";
+    $ww = mysqli_query($GLOBALS['conn'], $uu);
+    if ($ww) {
+        $num = mysqli_num_rows($ww);
+        if ($num > 0) {
+
+            $uus = "UPDATE `cbd` SET `card_num`= '" . $card . "',`ref_id`='" . $ref . "' WHERE `auth`='" . $auth . "'";
+            $wws = mysqli_query($GLOBALS['conn'], $uus);
+            if ($wws) {
+                return 1;
+            }
+        } else {
+            return 0;
+        }
+    } else {
+        return 0;
+    }
+}
+
+function sms($f_id)
+{
+    db();
+    $sql = "SELECT * FROM cbd WHERE factor_id = " . $f_id;
+    $r = mysqli_query($GLOBALS['conn'], $sql);
+    if ($r) {
+        $rows = mysqli_fetch_assoc($r);
+        $factor = $rows['id'];
+        $uid = $rows['uid'];
+        $shop_id = $rows['shop_id'];
+        $manager = 'حسابداری';
+        $accept = 'صادر';
+
+        $sqli = "SELECT * FROM base WHERE id = " . $shop_id;
+        $ri = mysqli_query($GLOBALS['conn'], $sqli);
+        if ($ri) {
+            $rowsi = mysqli_fetch_assoc($ri);
+            $customer = $rowsi['shop_manager'];
+        }
+
+        $sqla = "SELECT * FROM customers WHERE uid = " . $uid;
+        $ra = mysqli_query($GLOBALS['conn'], $sqla);
+        if ($ra) {
+            $rowsa = mysqli_fetch_assoc($ra);
+            $num = $rowsa['mtel'];
+        }
+    }
+
+    $api = 'http://ippanel.com:8080/?apikey=D0-DdESMEsPOR7lIS6St_Fux8kGEWOMLCinHGR9CNyc=&pid=adtg6353w7u144o&fnum=3000505&tnum=' . $num . '&p1=factor&p2=customer&p3=manager&p4=accept&v1=' . $factor . '&v2=' . $customer . '&v3=' . $manager . '&v4=' . $accept;
+    $curl = curl_init();
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => $api,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'GET',
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+    return $response;
+}
+
+
+function get_mission_info($mid, $opr, $accept_time, $sign)
+{
+    db();
+    switch ($opr) {
+        case 'select':
+            $sql = "SELECT * FROM mission WHERE id=" . $mid;
+            $r = mysqli_query($GLOBALS['conn'], $sql);
+            if ($r) {
+                $num = mysqli_num_rows($r);
+                if ($num > 0) {
+                    $row = mysqli_fetch_assoc($r);
+                    $sign = $row['sign'];
+                    $accept_time = $row['accept_time'];
+                    return ['sign' => $sign, 'accept_time' => $accept_time];
+                } else {
+                    return 0;
+                }
+            } else {
+                return 0;
+            }
+        case 'add':
+            $sql = "UPDATE mission SET sign='" . $sign . "',accept_time='" . $accept_time . "' WHERE id=" . $mid;
+            $r = mysqli_query($GLOBALS['conn'], $sql);
+            if ($r) {
+                return 1;
+            }
+            break;
+    }
+}
+
+function get_paper_accept($id, $type, $pass, $signer)
+{
+    db();
+    $zaman = date('Y-m-d H:i:s');
+    switch ($type) {
+        case 'mission':
+            $sql = "SELECT * FROM `customers` WHERE `pass` = " . $pass;
+            $r = mysqli_query($GLOBALS['conn'], $sql);
+            if ($r) {
+                $num = mysqli_num_rows($r);
+                if ($num > 0) {
+                    $rr = mysqli_fetch_assoc($r);
+                    $super = $rr['super'];
+                    $manager = $rr['manager'];
+                    $both = $rr['both'];
+                    $acc = $rr['acc'];
+                    if ($signer == 'super' && $super == 1 || $signer == 'manager' && $manager == 1 || $signer == 'both' && $both == 1 || $signer == 'acc' && $acc == 1) {
+                        $result = get_mission_info($id, 'select', null, null);
+                        $emza_code = $result['sign'] . $rr['uid'] . ',';
+                        $emza_accept_time = $result['accept_time'] . $zaman . ',';
+                        $resulti = get_mission_info($id, 'add', $emza_accept_time, $emza_code);
+                        $accept = $resulti;
+                    } else {
+                        $accept = 0;
+                    }
+                } else {
+                    $accept = -1;
+                }
+            }
+            break;
+    }
+    return $accept;
 }

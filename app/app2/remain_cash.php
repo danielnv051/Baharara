@@ -18,23 +18,32 @@ for ($i = 0; $i < $y; $i++) {
     $date_pos = $x[$i]['date_pos'];
     $desc_pos = $x[$i]['desc_pos'];
     $desc = $x[$i]['desc'];
-
+    if ($cat == 'رسمی') {
+        $f_bg = 'font-size: 1rem; padding: 0.2rem; background: #000; border-radius: 0.2rem;';
+    } else {
+        $f_bg = 'font-size: 1rem; padding: 0.2rem;border-radius: 0.2rem;';
+    }
     $sum += intval($fee);
 
     $j = $i + 1;
+    if ($cat == 'رسمی') {
+        $f_bg = 'font-size: 1rem; padding: 0.2rem; background: #000; border-radius: 0.2rem;';
+    } else {
+        $f_bg = 'font-size: 1rem; padding: 0.2rem;border-radius: 0.2rem;';
+    }
     $z .= '        
     <table id="ttarget" style="user-select: none;">
     <tr>
-        <td rowspan="7" style="padding: 1rem;font-size: 2rem;border: 1px solid #fff;">
-        ' . $j . '
-        </td>
+        <th rowspan="8"><span style="text-align: center;padding: 1rem;font-size: 2rem;">' . $j . '</span><br/> <span class="factor_types" style="' . $f_bg . '">' . $cat . '</span>
+        </th>
+    </tr>   
+    <tr>
         <th>
-            شماره فاکتور: ' . $no . ' <br/>
-            نوع فاکتور: ' . $cat . '
+            شماره فاکتور: ' . $no . '
         </th>
     </tr>
     <tr>
-        <th colspan="2">
+        <th colspan="1">
             تاریخ فاکتور: ' . $tarikh . '
         </th>  
     </tr>

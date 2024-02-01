@@ -14,7 +14,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         WebView web_v = findViewById(R.id.webv);
-        String siteUrl = "https://perfumeara.com/webapp/app1";
+        String siteUrl = "https://perfumeara.com/webapp/app2";
         web_v.loadUrl(siteUrl);
         web_v.getSettings().setJavaScriptEnabled(true);
         web_v.setWebViewClient(new mWebViewClient());

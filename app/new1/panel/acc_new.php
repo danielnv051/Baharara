@@ -45,6 +45,7 @@ $tedad_ev = 0;
 $old_customer = [];
 $old_customer_count = 0;
 $new_customer_count = 0;
+$line = '';
 
 $base = [];
 $loc = [];
@@ -67,10 +68,18 @@ switch ($_GET['g']) {
         $head = 'احمدی';
         $GLOBALS['line'] = 2;
         break;
+    case '91b3c2641e0f1cabef06ca395113c99c':
+        $head = 'معمار';
+        $GLOBALS['line'] = 5;
+        break;
     case '45c48cce2e2d7fbdea1afc51c7c6ad26':
         $head = 'جاهدی';
         $GLOBALS['admin'] = '99';
         $GLOBALS['line'] = '*';
+        break;
+    case 'd168a1c0988e0437490aaac9203044a4':
+        $head = 'خراشادی';
+        $GLOBALS['line'] = '**';
         break;
     case '45c48cce2e2d7fbdea1afc51c7c6ad2':
         $head = 'اکبری';
@@ -88,6 +97,10 @@ switch ($_GET['g']) {
         break;
     case 'b8e0f272c78fbcb1944a56f5e37158a2':
         $head = 'اسدی';
+        $GLOBALS['line'] = '*';
+        break;
+    case 'a0569c45d15d01f962669eb145638a66':
+        $head = 'اکبری جور';
         $GLOBALS['line'] = '*';
         break;
     case 's.m':
@@ -237,11 +250,42 @@ function seller_team($uid)
 function order_info($zaman)
 {
     db();
+    $permit = $_GET['g'];
+
     $x = $GLOBALS['admin'];
-    if ($x == '99') {
-        $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' ORDER BY `id` desc";
+    if (strlen($zaman) > 3) {
+        if ($x == '99') {
+            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' ORDER BY `id` desc";
+        } elseif ($GLOBALS['line'] == 5) {
+            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` = 300 ORDER BY `id` desc";
+        } elseif ($GLOBALS['line'] == '**') {
+            $sss = "SELECT * FROM customers WHERE permit = '" . $permit . "'";
+            $rrr = mysqli_query($GLOBALS['conn'], $sss);
+            if ($rrr) {
+                $www = mysqli_fetch_assoc($rrr);
+                $u_id = $www['uid'];
+                $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` ='" . $u_id . "'  ORDER BY `id` desc";
+            }
+        } else {
+            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` != '100' AND `uid` != '200' AND `uid` != '300' ORDER BY `id` desc";
+        }
     } else {
-        $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` != '200' ORDER BY `id` desc";
+        $zamani = '2401210000000000000000';
+        if ($x == '99') {
+            $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " ORDER BY `id` desc";
+        } elseif ($GLOBALS['line'] == 5) {
+            $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` = 300 ORDER BY `id` desc";
+        } elseif ($GLOBALS['line'] == '**') {
+            $sss = "SELECT * FROM customers WHERE permit = '" . $permit . "'";
+            $rrr = mysqli_query($GLOBALS['conn'], $sss);
+            if ($rrr) {
+                $www = mysqli_fetch_assoc($rrr);
+                $u_id = $www['uid'];
+                $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` ='" . $u_id . "'  ORDER BY `id` desc";
+            }
+        } else {
+            $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` != '100' AND `uid` != '200' AND `uid` != '300' ORDER BY `id` desc";
+        }
     }
 
     $result = mysqli_query($GLOBALS['conn'], $sql);
@@ -258,8 +302,8 @@ function order_info($zaman)
         $lines = $t[0];
         $teams = $t[1];
 
-        $check_ = array_search($lines, $GLOBALS['line']);
-        $check__ = array_search($teams, $GLOBALS['team']);
+        //$check_ = array_search($lines, $GLOBALS['line']);
+        //$check__ = array_search($teams, $GLOBALS['team']);
 
         //if ((intval($check_) > 0 && intval($check__) > 0) || isset($GLOBALS['admin'])) {
         get_factor_($row['shop_id']);
@@ -304,6 +348,7 @@ function order_info($zaman)
             'uid' => $uid,
             'line' => $rows['line'],
             'del_pos' => $del_pos,
+            'type' => $row['factor_type'],
         ];
         //}
     }
@@ -349,7 +394,7 @@ function order_info_($operator, $order_type, $zaman)
     } elseif ($operator == 'manager') {
         $st = '`accept` LIKE "_," AND `buy_pos` = "+"';
     } elseif ($operator == 'acc') {
-        $st = '`accept` LIKE "_,_," AND `buy_pos` = "+"';
+        $st = '`accept_time` LIKE "___________________,___________________," AND `buy_pos` = "+"';
     } elseif ($operator == 'factor') {
         $st = '`buy_pos` = "+"';
     }
@@ -503,7 +548,7 @@ if (isset($_GET['t'])) {
             break;
     }
 } else {
-    order_info($zaman);
+    order_info($_GET['date']);
 }
 
 $z = explode('-', $_GET['date']);
@@ -865,43 +910,50 @@ function payment_type_sep($payment_type = null, $pos = false)
                             <div class="card-body p-4">
                                 <h3 class="font-24 mb-1">لیست فاکتور های بازاریاب ها
                                 </h3>
-                                <h5>کاربر سامانه : <?php echo $head; ?> </h5>
+                                <h5>کاربر سامانه : <?php echo $head; ?> - <?php echo $day_name[$m] ?> - <?php echo $jalali_date; ?></h5>
                                 <div class="doc">
-                                    <button id="all" class="btn btn-success">همه CBD</button>
-                                    <button id="factor" class="btn btn-primary" onclick="show_factor('<?php echo $GLOBALS['line']; ?>')">همه فاکتور ها</button>
-                                    <button id="super" class="btn btn-warning" onclick="show_super('<?php echo $GLOBALS['line']; ?>')">عدم تایید سرپرست</button>
-                                    <?php if ($GLOBALS['admin'] == '99' || $GLOBALS['line'] == '*' || $GLOBALS['line'] == '**') {
-                                        echo '
-                                        <button id="manager" class="btn btn-danger">عدم تایید مدیر</button>
-                                        <button id="acc" class="btn btn-hesabdari" onclick="show_acc()">عدم تایید حسابداری</button>
+                                    <table>
+                                        <tr>
+                                            <td><button id="all" class="btn btn-success">همه CBD</button></td>
+                                            <td><button id="factor" class="btn btn-primary" onclick="show_factor('<?php echo $GLOBALS['line']; ?>')">همه فاکتور ها</button></td>
+                                            <td><button id="super" class="btn btn-warning" onclick="show_super('<?php echo $GLOBALS['line']; ?>')">عدم تایید سرپرست</button></td>
+
+                                            <?php
+                                            if ($GLOBALS['admin'] == '99' && $GLOBALS['line'] == '*') {
+                                                echo '
+                                        <td><button id="instagram" class="btn btn-success">فاکتور اینستاگرام</button></td>
+                                        <td><button id="labelzan" class="btn btn-success">لیبل سفارشات</button></td>
                                         ';
-                                    } ?>
+                                            }
+                                            ?>
+
+                                            <?php
+                                            if ($GLOBALS['admin'] == '99' || $GLOBALS['line'] == '*' || $GLOBALS['line'] == '**') {
+                                                echo '
+                                        <td><button id="manager" class="btn btn-danger">عدم تایید مدیر</button></td>
+                                        <td><button id="acc" class="btn btn-hesabdari" onclick="show_acc()">عدم تایید حسابداری</button></td>
+                                        ';
+                                            }
+                                            ?>
+                                        </tr>
+                                    </table>
                                 </div>
                                 <div class="zaman">
-                                    <h3 class="font-24 mb-1">روز :
-                                        <?php echo $day_name[$m] ?>
-                                    </h3>
-                                    <h3 class="font-24 mb-1">تاریخ :
-                                        <?php echo $jalali_date; ?>
-                                    </h3>
-
                                     <p class="mb-30"></p>
-
                                     <table style="margin: 0 auto;">
                                         <tr id="first_row">
                                             <td>ردیف</td>
                                             <td>بازاریاب</td>
                                             <td>نام <br /> فروشگاه</td>
-                                            <td>نام <br /> مسئول</td>
-                                            <td>نام <br /> شهر</td>
+                                            <td>نام <br /> مشتری</td>
+                                            <td>نوع<br />فاکتور</td>
                                             <td>نوع <br /> مشتری</td>
-                                            <td>ورود</td>
+                                            <td>تاریخ</td>
                                             <td>وضعیت</td>
                                             <td>فاکتور</td>
                                             <td>تایید <br /> سرپرست</td>
                                             <td>تایید <br /> مدیر فروش</td>
                                             <td>تایید <br /> حسابداری</td>
-                                            <td>تایید <br /> انباردار</td>
                                         </tr>
                                         <tr>
                                             <?php
@@ -1037,6 +1089,19 @@ function payment_type_sep($payment_type = null, $pos = false)
                                                 $lines =  $data_log[$i]['line'];
                                                 $del_pos =  $data_log[$i]['del_pos'];
 
+                                                if ($data_log[$i]['type'] == '') {
+                                                    $f_t = 'متفرقه';
+                                                    $bg = 'transparent';
+                                                    $cl = '#58595a';
+                                                } elseif ($data_log[$i]['type'] == 'رسمی') {
+                                                    $bg = '#000';
+                                                    $cl = '#FFEB3B';
+                                                    $f_t = $data_log[$i]['type'];
+                                                } elseif ($data_log[$i]['type'] == 'متفرقه') {
+                                                    $f_t = $data_log[$i]['type'];
+                                                    $bg = 'transparent';
+                                                    $cl = '#58595a';
+                                                }
 
                                                 echo "
                                             <tr style='background:" . $ctt . "' class='l" . $lines . " data " . $fctr . " " . $both1 . " " . $both2 . " " . $both3 . " d" . $del_pos . "'>
@@ -1044,15 +1109,14 @@ function payment_type_sep($payment_type = null, $pos = false)
                                                 <td class='family'>" . $family . "</td>
                                                 <td>" . $base['shop_name'] . "</td>
                                                 <td>" . $base['shop_manager'] . "</td>
-                                                <td>" . $fl['city'] . "</td>
+                                                <td style='color:" . $cl . ";background:" . $bg . "'>" . $f_t . "</td>
                                                 <td>" . $ctx . "</td>
-                                                <td>" . $vorood . '<br/>' . explode(' ', $data_log[$i]['login'])[1] . "</td>
+                                                <td>" . $vorood . "</td>
                                                 <td>" . $pos . "</td>
                                                 <td>" . $factor_link . "</td>
                                                 <td>" . $both_1 . "</td>
                                                 <td>" . $both_2 . "</td>
                                                 <td>" . $both_3 . "</td>
-                                                <td></td>
                                             </tr>
                                             <tr class='l" . $lines . " data " . $fctr . " " . $both1 . " " . $both2 . " " . $both3 . " d" . $del_pos . "'>
                                             
@@ -1064,7 +1128,7 @@ function payment_type_sep($payment_type = null, $pos = false)
                                         </tr>
                                     </table>
 
-                                    <table style=" text-align: center;display:inline;float: right;border: 1px solid #000;margin-bottom:0.5rem;margin-top:0.5rem">
+                                    <table style="display:none; text-align: center;display:inline;float: right;border: 1px solid #000;margin-bottom:0.5rem;margin-top:0.5rem">
                                         <tr>
                                             <th colspan="5">اطلاعات ویزیت</th>
                                         </tr>
@@ -1130,12 +1194,6 @@ function payment_type_sep($payment_type = null, $pos = false)
     ======================================= -->
         <!-- Must needed plugins to the run this Template -->
 
-        <script src="../js/popper.min.js"></script>
-        <script src="../js/bootstrap.min.js"></script>
-        <script src="../js/bundle.js"></script>
-        <script src="../js/user_login.js"></script>
-        <!-- Active JS -->
-        <script src="./js/default-assets/active.js"></script>
 
         <script>
             let g = $('#g').val();
@@ -1161,10 +1219,14 @@ function payment_type_sep($payment_type = null, $pos = false)
                 //window.location.assign(masir + pos);
             });
 
+            $('#instagram').click(function() {
+                show_factor(5);
+            });
+
             function show_factor(x) {
                 $("tr[class*='l']").hide();
 
-                if (x == '*') {
+                if (x == '*' || x == '**') {
                     let line = '';
                     $('tr').show();
                 } else {
@@ -1199,7 +1261,7 @@ function payment_type_sep($payment_type = null, $pos = false)
         <script>
             $(document).ready(function() {
                 let parent = $('#parent_').val();
-                if (parent == '*') {
+                if (parent == '*' || parent == '**') {
                     $('.data').show();
                 } else {
                     $('.data').hide();
@@ -1207,9 +1269,92 @@ function payment_type_sep($payment_type = null, $pos = false)
                 }
 
                 $('tr.d1').hide();
+
+                let al_cbd = $('*').find('.data').length / 2;
+                let al_fac = $('*').find('.factor').length / 2;
+                let al_insta = $('*').find('.l5').length / 2;
+                let no_super = $('*').find('.super_no').length / 2;
+                let no_manager = $('*').find('.manager_no').length / 2;
+                let no_acc = $('*').find('.acc_no').length / 2;
+
+                /* $('#all_cbd').text(al_cbd);
+                $('#all_factors').text(al_fac);
+                $('#insta_factor').text(al_insta);
+                $('#super_factor').text(no_super);
+                $('#manager_factor').text(no_manager);
+                $('#acc_factor').text(no_acc); */
+
+
+            });
+
+            $('#labelzan').click(function() {
+                window.location.assign('https://perfumeara.com/webapp/app_new/panel/label.php?date=<?php echo $_GET["date"]; ?>');
             });
         </script>
-</body>
 
+        <style>
+            .doc {
+                position: relative;
+            }
+
+            .doc table {
+                position: absolute;
+                top: -5rem;
+                right: -1.4rem;
+                border: none;
+            }
+
+            .doc table td:nth-child(1) {
+                width: 8.5rem;
+            }
+
+            .doc table td:nth-child(2) {
+                width: 10rem;
+            }
+
+            .doc table td:nth-child(3) {
+                width: 10.4rem;
+            }
+
+            .doc table td:nth-child(4) {
+                width: 11.3rem;
+            }
+
+            .doc table td:nth-child(5) {
+                width: 10.2rem;
+            }
+
+            .doc table td:nth-child(6) {
+                width: 10.8rem;
+            }
+
+            .doc td,
+            .doc tr,
+            .doc table {
+                border: none;
+            }
+
+            .doc button {
+                width: 140px;
+                height: 60px;
+            }
+        </style>
+
+        <?php
+        if ($_GET['g'] == 'b8e0f272c78fbcb1944a56f5e37158a2') {
+            echo '<script>
+            $(document).ready(function() {
+                $("*").find(".l100").hide();
+            });</script>';
+        }
+
+        ?>
+        <script src="../js/popper.min.js"></script>
+        <script src="../js/bootstrap.min.js"></script>
+        <script src="../js/bundle.js"></script>
+        <script src="../js/user_login.js"></script>
+        <!-- Active JS -->
+        <script src="./js/default-assets/active.js"></script>
+</body>
 
 </html>

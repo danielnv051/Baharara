@@ -16,6 +16,11 @@ if ($line == '5') {
         <input type="hidden" id="factor_id" class="form-control" value="' . date('ymd') . date('His') . time() . '" />
     </div>';
     $buy_ = '<button class="btn btn-warning" id="positive">+</button>';
+    $insta_id = '
+        <span style="margin-top:1rem">آیدی اینستاگرام  : </span>
+        <div>
+            <input type="text" id="insta_id" class="form-control" value=""/>
+        </div>';
 } else {
     $postCode = '
     <span>کدملی :</span>
@@ -29,11 +34,13 @@ if ($line == '5') {
         <input type="hidden" id="loc_id" class="form-control" value="' . $_GET['loc'] . '" />
         <input type="hidden" id="login_shop" class="form-control" value="' . date('Y-m-d H:i:s') . '" />
         <input type="hidden" id="factor_id" class="form-control" value="' . date('ymd') . date('His') . time() . '" />
+        <input type="hidden" id="insta_id" class="form-control" value=""/>
     </div>';
     $buy_ = '
     <button class="btn btn-warning" id="positive">+</button>
     <button class="btn btn-warning" id="negetive">-</button>
     ';
+    $insta_id = '';
 }
 ?>
 <fieldset class='hor' style="height: inherit;" id="cdb_form">
@@ -43,6 +50,7 @@ if ($line == '5') {
     <div>
         <input type="text" id="shop_manager" class="form-control" />
     </div>
+    <?php echo $insta_id; ?>
     <span>آدرس: </span>
     <div style="margin-bottom: 1rem;">
         <input type="text" id="shop_addr" class="form-control" />

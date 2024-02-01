@@ -1,6 +1,6 @@
 <?php
 require_once('icons.php');
-require_once 'panel/jdf.php';
+require_once 'jdf.php';
 
 $rule = 0;
 $sum_total = 0;
@@ -201,27 +201,46 @@ function load_seller_shift($uid, $symbol)
 function get_cat()
 {
     db();
+    $father = '';
     $u = $_COOKIE['uid'];
     $sqlw = "SELECT * FROM `customers` WHERE `uid` =" . $u;
     $resultiw = mysqli_query($GLOBALS['conn'], $sqlw);
     $rs = mysqli_fetch_assoc($resultiw);
     $line = $rs['line'];
+    $other = $rs['other'];
 
     if ($line == '100') {
-        $sql = "SELECT * FROM `parent` WHERE 1 ORDER BY `ordered` ASC";
+        $sql = "SELECT * FROM `parent` WHERE `pos`!=0 ORDER BY `group` ASC";
     } else if ($line == '5') {
-        $sql = "SELECT * FROM `parent` WHERE `pos` !=0 AND `line` = '5' ORDER BY `ordered` ASC";
+        $sql = "SELECT * FROM `parent` WHERE `pos` !=0 AND `line` = '5' ORDER BY `group` ASC";
+    } else if ($other == '*') {
+        $sql = "SELECT * FROM `parent` WHERE `pos` !=0 AND `other` = '1' ORDER BY `group` ASC";
     } else {
-        $sql = "SELECT * FROM `parent` WHERE `pos` !=0 AND `line` = " . $line . " OR `pos` !=0 AND `line` = 3 ORDER BY `ordered` ASC";
+        $sql = "SELECT * FROM `parent` WHERE `pos` !=0 AND `line` = " . $line . " OR `line` = 3 ORDER BY `group` ASC";
     }
 
     $resultiq = mysqli_query($GLOBALS['conn'], $sql);
     $num = mysqli_num_rows($resultiq);
     for ($i = 0; $i < $num; $i++) {
         $r = mysqli_fetch_assoc($resultiq);
-        $name = $r['esm'];
-        $id = $r['id'];
-        echo '<button class="btn btn-warning" onclick=open_factor(' . $id . ') style="width: 95%; margin: 0.5rem auto;">' . $name . '</button>';
+        $group = $r['group'];
+
+        $yy = "SELECT * FROM father WHERE id = " . $group;
+        $yyy = mysqli_query($GLOBALS['conn'], $yy);
+        $ry = mysqli_fetch_assoc($yyy);
+        $esm_y = $ry['name'];
+
+        if ($father == $group) {
+            $name = $r['esm'];
+            $id = $r['id'];
+            echo '<button class="btn btn-warning" onclick=open_factor(' . $id . ') style="width: 95%; margin: 0.5rem auto;">' . $name . '</button>';
+        } else {
+            echo '</fieldset><br/><fieldset style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: fit-content; gap: 0rem;"><legend>' . $esm_y . '</legend>';
+            $name = $r['esm'];
+            $id = $r['id'];
+            echo '<button class="btn btn-warning" onclick=open_factor(' . $id . ') style="width: 95%; margin: 0.5rem auto;">' . $name . '</button>';
+            $father = $group;
+        }
     }
 }
 
@@ -229,16 +248,22 @@ function get_prod($cat)
 {
     db();
 
+    $aa = "SELECT * FROM `parent` WHERE `id` =" . $cat;
+    $bb = mysqli_query($GLOBALS['conn'], $aa);
+    $cc = mysqli_fetch_assoc($bb);
+    $multi_tester = $cc['multi_tester'];
+
     $u = $_COOKIE['uid'];
     $a = "SELECT * FROM `customers` WHERE `uid` =" . $u;
     $b = mysqli_query($GLOBALS['conn'], $a);
     $rs = mysqli_fetch_assoc($b);
     $line = $rs['line'];
-
-
+    $GLOBALS['sum_tedad_req'] = 0;
 
     echo '<div id="all_prod">';
-    $sql = "SELECT * FROM `prod` WHERE `parent` =" . $cat . " AND `fee`>0 ORDER BY `name` ASC";
+    $zaman_req = date("ymd") . '0000000000000000';
+
+    $sql = "SELECT * FROM `prod` WHERE `parent` =" . $cat . " AND `fee`>2 ORDER BY `name` ASC";
     $resultiq = mysqli_query($GLOBALS['conn'], $sql);
     $num = mysqli_num_rows($resultiq);
     echo '<fieldset class="hor" style="height: fit-content; margin: 3.5rem auto -2rem;" class="factor_2">';
@@ -252,12 +277,26 @@ function get_prod($cat)
         $offer_box = $r['offer_box'];
         $tester_box = $r['tester_box'];
         $aks = 'http://perfumeara.com/webapp/app1/img/prod/' . $code . '.jpg';
-        /* if (file_exists($img)) {
-            $aks = $img;
+
+        $mojudi = check_mojudi($code);
+        $mm = explode(',', $mojudi);
+        if ($mm[0] != NULL || $mm[0] != '') {
+        }
+
+        $sql_req = "SELECT tedad,offer FROM factor WHERE factor_id>$zaman_req AND cat_id = $code";
+        $result_req = mysqli_query($GLOBALS['conn'], $sql_req);
+        $num_req = mysqli_num_rows($result_req);
+
+        /*         for ($i = 0; $i < $num_req; $i++) {
+            $row_req = mysqli_fetch_assoc($result_req);
+            $GLOBALS['sum_tedad_req'] += $row_req['tedad'] + $row_req['offer'];
+        }
+
+        if ($GLOBALS['sum_tedad_req'] > $minimum) {
         } else {
-            $aks = './img/prod/bgh.jpg';
         } */
-        if ($pos == '0') {
+
+        if ($pos == 0) {
             $ps = 'disabled';
             $ps_color = 'gray';
         } else {
@@ -265,13 +304,13 @@ function get_prod($cat)
             $ps_color = '#525254';
         }
 
-        if ($offer_box == '0') {
+        if ($offer_box == 0) {
             $ob = 'disabled';
         } else {
             $ob = '';
         }
 
-        if ($tester_box == '0') {
+        if ($tester_box == 0) {
             $tb = 'disabled';
         } else {
             $tb = '';
@@ -284,6 +323,15 @@ function get_prod($cat)
             $tb = '';
         }
 
+        if ($line == 5) {
+            $insta_less =  '
+            <td style="text-align: center;padding: 0.3rem;">% تخفیف<br/>
+                <input class="cal form-control" min="0" type="number" id="insta_less' . $code . '" class="form-control" style="text-align: center;" onchange = "cal_price_with_offer(' . $code . ')"/>
+            </td>';
+        } else {
+            $insta_less = '<input class="cal form-control" min="0" type="hidden" id="insta_less' . $code . '" class="form-control" style="text-align: center;"/>';
+        }
+
         echo '
     
     <div id="div' . $code . '" style="background-color:' . $ps_color . '">
@@ -292,43 +340,114 @@ function get_prod($cat)
                 <th style="width:4rem">
                     <span class="bg_pic lazy" style="background: #fff url(' . $aks . ');background-position: center center; background-size: 2rem 3rem; background-repeat: repeat-y;" class="img_prod"></span>
                 </th>
-                <td style="text-align: center;">تعداد<br/>
-                    <input ' . $ps . ' class="cal form-control" type="number" id="n' . $code . '" class="form-control" style="width: 4rem; margin-left: 0.3rem; margin-right: 1rem; text-align: center;" onchange = "cal_price_with_offer(' . $code . ')"/>
-                </td>
-                <td style="text-align: center;">آفر<br/>
-                    <input ' . $ps . ' ' . $ob . ' class="cal form-control" type="number" id="o' . $code . '" class="form-control" style="width: 4rem; margin-left: 0.3rem; margin-right: 1rem; text-align: center;" onchange = "cal_price_with_offer(' . $code . ')"/>
-                </td>
-                <td style="text-align: center;">تستر<br/>
-                    <input ' . $ps . ' ' . $tb . ' class="cal form-control" type="number" id="t' . $code . '" class="form-control" style="width: 4rem; margin-left: 0.3rem; margin-right: 1rem; text-align: center;" onchange = "cal_price_with_offer(' . $code . ')"/>
-                </td>
-            </tr>
-            <tr style="vertical-align: middle;">
-                <td colspan="1" style="font-size: 0.9rem;text-align: center;">' . $name . ' ' . $msg . '</td>
-                <td colspan="1" style="text-align:left;font-size: 0.9rem;">قیمت:</td>
-                <td colspan="1" style="text-align: center;">
-                    <span id="e' . $code . '" style="font-size: 0.9rem;">' . ($fee) . '</span>
-                    <span id="m' . $code . '" style="display:none">0</span>
-                </td>
-                <td colspan="1" style="text-align: right;">
-                    <button ' . $ps . ' class="btn btn-default" style="width: 3rem; height: 3rem;margin: 0.8rem auto;" onclick="save_order(' . $code . ', ' . $cat . ')" id="btn_order' . $code . '">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cart-check-fill" viewBox="0 0 16 16">
-                         <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1.646-7.646-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708z"/>
-                      </svg>
-                    </button>
-                    <button ' . $ps . ' class="btn btn-default" style="width: 3rem; height: 3rem;margin: 0.8rem auto;" onclick="del_order(' . $code . ')" id="del_order' . $code . '">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
-                            <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
-                        </svg>
-                    </button>
-                </td>
-            </tr>
-        </table>
+                <td style="text-align: center;padding: 0.3rem;">تعداد<br/>
+                    <input ' . $ps . ' class="cal form-control" type="number" min="0" id="n' . $code . '" class="form-control" style="text-align: center;" onchange = "cal_price_with_offer(' . $code . ')" />
+                </td>';
+
+        if ($line == 5) {
+            echo '';
+        } else if ($offer_box > 0) {
+            echo '
+                    <td style="text-align: center;padding: 0.3rem;">آفر<br/>
+                        <input class="cal form-control" min="0" type="number" id="o' . $code . '" class="form-control" style="text-align: center;" onchange = "cal_price_with_offer(' . $code . ')"/>
+                    </td>';
+        } else {
+            echo '
+                    <td style="text-align: center;padding: 0.3rem;display:none;" >آفر<br/>
+                        <input disabled class="cal form-control" min="0" type="number" id="o' . $code . '" class="form-control" style="text-align: center;background-color: #E0E0E0;" onchange = "cal_price_with_offer(' . $code . ')"/>
+                    </td>';
+        }
+
+        if ($line == 5) {
+            echo $insta_less;
+        } else if ($tester_box > 0) {
+            echo '
+                    <td style="text-align: center;padding: 0.3rem;">تستر<br/>
+                        <input ' . $ps . ' ' . $tb . ' class="cal form-control" min="0" type="number" id="t' . $code . '" class="form-control" style="text-align: center;" onchange = "cal_price_with_offer(' . $code . ')"/>
+                    </td>';
+        } else {
+            echo '
+                    <td style="text-align: center;padding: 0.3rem;display:none">تستر<br/>
+                        <input disabled ' . $ps . ' ' . $tb . ' class="cal form-control" min="0" type="number" id="t' . $code . '" class="form-control" style="text-align: center;background-color: #E0E0E0;" onchange = "cal_price_with_offer(' . $code . ')"/>
+                    </td>';
+        }
+
+        '</tr>';
+        $price_box = '
+            <td colspan="1" style="text-align:center;font-size: 0.9rem;">قیمت:</td>
+            <td colspan="1" style="text-align: right;">
+                <span id="e' . $code . '" style="font-size: 0.9rem;">' . ($fee) . '</span> تومان
+                <span id="m' . $code . '" style="display:none">0</span>
+                <span id="l' . $code . '" style="display:none">0</span>
+            </td>';
+
+        if ($line == 5) {
+            $esm = '<td colspan="2" style="font-size: 0.8rem;text-align: center;">' . $name . ' ' . $msg . '</td>';
+        } else {
+            $esm = '<td colspan="1" style="font-size: 0.8rem;text-align: center;">' . $name . ' ' . $msg . '</td>';
+        }
+        if ($tester_box > 0) {
+            if ($multi_tester > 0) {
+                echo '            
+                <tr style="vertical-align: middle;">
+                    ' . $esm . '
+                    <td colspan="1" style="font-size: 0.9rem;text-align: center;">
+                        <div class="tester_type" style="display:none">
+                            <span>نوع تستر</span>
+                            
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="tester_type" id="smil' . $code . '" value="smil" checked>
+                                <label class="form-check-label" for="smil' . $code . '">100 میل</label>
+                            </div>
+                        </div>
+                    </td>
+                    ' . $price_box . '
+                </tr>';
+            } else {
+                echo '            
+                <tr style="vertical-align: middle;">
+                    <td colspan="1" style="font-size: 0.8rem;text-align: center;">' . $name . ' ' . $msg . '</td>
+                    ' . $price_box . '
+                </tr>';
+            }
+        } else {
+            if ($line == 5) {
+                echo '            
+                <tr style="vertical-align: middle;">
+                    <td colspan="2" style="font-size: 0.8rem;text-align: center;">' . $name . ' ' . $msg . '</td>
+                    ' . $price_box . '
+                </tr>';
+            } else {
+                echo '            
+                <tr style="vertical-align: middle;">
+                    <td colspan="1" style="font-size: 0.8rem;text-align: center;">' . $name . ' ' . $msg . '</td>
+                    ' . $price_box . '
+                </tr>';
+            }
+        }
+
+        echo '
+            </table>
+            <table>
+                <tr>
+                    <td colspan="1" style="text-align: right;">
+                        <button ' . $ps . ' class="btn btn-default" style="width: 3rem; height: 3rem;margin: 0.8rem auto;width: 46vw;" onclick="save_orders(' . $code . ', ' . $cat . ')" id="btn_order' . $code . '">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cart-check-fill" viewBox="0 0 16 16">
+                                <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1.646-7.646-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708z"/>
+                            </svg>
+                        </button>
+                        <button ' . $ps . ' class="btn btn-danger" style="background-color:#dc3545;width: 3rem; height: 3rem;margin: 0.8rem auto;width: 46vw;" onclick="del_order(' . $code . ')" id="del_order' . $code . '">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                                <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
+                            </svg>
+                        </button>
+                    </td>
+                </tr>
+            </table>
     </div>
         ';
     }
-    echo '</fieldset></div>
-
-    ';
+    echo '</fieldset></div>';
 }
 function saveTemp($uid, $x = null, $wipe = 0)
 {
@@ -372,46 +491,122 @@ function saveVar($uid, $x = null, $wipe = 0, $yn = false)
     $resulti = mysqli_query($GLOBALS['conn'], $sq);
 }
 
-function add_factor($uid, $factor_id, $cat_id, $prod_id, $tedad, $offer, $tester, $price_total, $price_pay)
+function add_factor($uid, $factor_id, $cat_id, $prod_id, $tedad, $offer, $tester, $price_total, $price_pay, $tester_type, $insta_off)
 {
     db();
+    if ($insta_off == '') {
+        $insta_off = 0;
+    }
     $sql = "SELECT * FROM factor WHERE uid=" . $uid . " AND factor_id=" . $factor_id . " AND prod_id=" . $prod_id;
     $result = mysqli_query($GLOBALS['conn'], $sql);
     if ($result) {
         $num = mysqli_num_rows($result);
-        if ($num > 0) {
-            $row = mysqli_fetch_assoc($result);
-            $id = $row['id'];
-            $sqla = "UPDATE factor SET tedad='" . $tedad . "',offer='" . $offer . "',tester='" . $tester . "',price_total='" . $price_total . "',price_pay='" . $price_pay . "' WHERE id=" . $id;
-            $r = mysqli_query($GLOBALS['conn'], $sqla);
-        } elseif ($num == 0) {
-            $sqla = "INSERT INTO `factor`(`id`, `uid`, `factor_id`, `cat_id`, `prod_id`, `tedad`, `offer`, `tester`, `price_total`, `price_pay`) VALUES(Null, '$uid', '$factor_id', '$cat_id', '$prod_id', '$tedad', '$offer', '$tester', '$price_total', '$price_pay')";
-            $resulta = mysqli_query($GLOBALS['conn'], $sqla);
+
+        if ($tester_type == $cat_id) {
+            if ($num > 0) {
+                $row = mysqli_fetch_assoc($result);
+                $id = $row['id'];
+                $sqla = "UPDATE factor SET tedad='" . $tedad . "',offer='" . $offer . "',tester='" . $tester . "',price_total='" . $price_total . "',price_pay='" . $price_pay . "',extra_less='" . $insta_off . "' WHERE id=" . $id;
+                $r = mysqli_query($GLOBALS['conn'], $sqla);
+            } elseif ($num == 0) {
+                $sqla = "INSERT INTO `factor`(`id`, `uid`, `factor_id`, `cat_id`, `prod_id`, `tedad`, `offer`, `tester`, `price_total`, `price_pay`,`extra_less`) VALUES(Null, '$uid', '$factor_id', '$cat_id', '$prod_id', '$tedad', '$offer', '$tester', '$price_total', '$price_pay', '$insta_off')";
+                $resulta = mysqli_query($GLOBALS['conn'], $sqla);
+            }
+        } else {
+            if ($tester_type == null || $tester_type == '') {
+                if ($num > 0) {
+                    $row = mysqli_fetch_assoc($result);
+                    $id = $row['id'];
+                    $sqlaa = "UPDATE factor SET tedad='" . $tedad . "',offer='" . $offer . "',tester='" . $tester . "',price_total='" . $price_total . "',price_pay='" . $price_pay . "',extra_less='" . $insta_off . "' WHERE id=" . $id;
+                    $r = mysqli_query($GLOBALS['conn'], $sqlaa);
+                } elseif ($num == 0) {
+                    $sqlaa = "INSERT INTO `factor`(`id`, `uid`, `factor_id`, `cat_id`, `prod_id`, `tedad`, `offer`, `tester`, `price_total`, `price_pay`,`extra_less`) VALUES(Null, '$uid', '$factor_id', '$cat_id', '$prod_id', '$tedad', '$offer', '$tester', '$price_total', '$price_pay', '$insta_off')";
+                    $resultaa = mysqli_query($GLOBALS['conn'], $sqlaa);
+                }
+            } else {
+                //if ($tester_type == 5 || $tester_type == 6) {
+
+                $q = "SELECT * FROM prod WHERE code=" . $prod_id;
+                $w = mysqli_query($GLOBALS['conn'], $q);
+                $e = mysqli_fetch_assoc($w);
+                $prod_name = $e['name'];
+
+                $a = "SELECT * FROM prod WHERE name = '" . $prod_name . "' AND parent=" . $tester_type;
+                $s = mysqli_query($GLOBALS['conn'], $a);
+                $d = mysqli_fetch_assoc($s);
+                $testers = $d['tester_code'];
+
+                /* } else {
+                    $testers = $prod_id;
+                    $tester_type = 0;
+                } */
+
+                $sqla = "SELECT * FROM factor WHERE factor_id=" . $factor_id . " AND prod_id='" . $testers . "'";
+                $resulta = mysqli_query($GLOBALS['conn'], $sqla);
+                $numa = mysqli_num_rows($resulta);
+
+                if ($numa > 0) {
+                    $c = mysqli_fetch_assoc($resulta);
+                    $idd = $c['id'];
+                    $sqlq = "UPDATE factor SET tedad='0',offer='0',tester='0',price_total='" . $price_total . "',price_pay='" . $price_pay . "' WHERE id=" . $idd;
+                    $rq = mysqli_query($GLOBALS['conn'], $sqlq);
+                    $sqlq = "UPDATE factor SET tedad='0',offer='0',tester='" . $tester . "',price_total='" . $price_total . "',price_pay='" . $price_pay . "' WHERE id=" . $idd;
+                    $rq = mysqli_query($GLOBALS['conn'], $sqlq);
+                } elseif ($num == 0) {
+                    $sqlq = "INSERT INTO `factor`(`id`, `uid`, `factor_id`, `cat_id`, `prod_id`, `tedad`, `offer`, `tester`, `price_total`, `price_pay`) VALUES(Null, '$uid', '$factor_id', '$cat_id', '$prod_id', '$tedad', '$offer', '0', '$price_total', '$price_pay')";
+                    $resultq = mysqli_query($GLOBALS['conn'], $sqlq);
+                    $last_id = mysqli_insert_id($GLOBALS['conn']);
+                    $sqlq = "INSERT INTO `factor`(`id`, `uid`, `factor_id`, `cat_id`, `prod_id`, `tedad`, `offer`, `tester`, `price_total`, `price_pay`,`related_id`) VALUES(Null, '$uid', '$factor_id', '$tester_type', '$testers', '0', '0', '$tester', '$price_total', '$price_pay','$last_id')";
+                    $resultq = mysqli_query($GLOBALS['conn'], $sqlq);
+                }
+            }
         }
+
         return 1;
     }
 }
 function del_factor($factor_id, $prod_id)
 {
     db();
-    $sql = "SELECT * FROM factor WHERE factor_id = " . $factor_id . " AND prod_id=" . $prod_id;
+    $sql = "SELECT * FROM factor WHERE factor_id = '" . $factor_id . "' AND prod_id='" . $prod_id . "'";
     $result = mysqli_query($GLOBALS['conn'], $sql);
     if ($result) {
         $num = mysqli_num_rows($result);
         if ($num > 0) {
-            $sq = "DELETE FROM factor WHERE factor_id = " . $factor_id . " AND prod_id=" . $prod_id;
+            $qry = mysqli_fetch_assoc($result);
+            $id = $qry['id'];
+            $tedad = $qry['tedad'];
+            $offer = $qry['offer'];
+            $jaam = $tedad + $offer;
+            $sq = "DELETE FROM `factor` WHERE `factor_id` = '" . $factor_id . "' AND `prod_id`='" . $prod_id . "'";
             $r = mysqli_query($GLOBALS['conn'], $sq);
-            $sql = "SELECT * FROM factor WHERE factor_id = " . $factor_id;
-            $result = mysqli_query($GLOBALS['conn'], $sql);
-            $nums = mysqli_num_rows($result);
-            return $nums;
+
+            $slq = "SELECT * FROM `mojudi` WHERE code = '$prod_id'";
+            $rs = mysqli_query($GLOBALS['conn'], $slq);
+            if ($rs) {
+                $rows = mysqli_fetch_assoc($rs);
+                $tt = $rows['tedad'] + $jaam;
+                $sqq = "UPDATE `mojudi` SET `tedad`= $tt WHERE `code` = '$prod_id'";
+                $r = mysqli_query($GLOBALS['conn'], $sqq);
+            }
+
+            if (strlen($id) > 0) {
+                $sq1 = "DELETE FROM `factor` WHERE `related_id` = '" . $id . "'";
+                $r1 = mysqli_query($GLOBALS['conn'], $sq1);
+            }
+
+            $sqla = "SELECT * FROM `factor` WHERE factor_id = " . $factor_id;
+            $results = mysqli_query($GLOBALS['conn'], $sqla);
+            $nums = mysqli_num_rows($results);
+            return $num;
         } elseif ($num == 0) {
             return 0;
         }
     }
 }
 
-function saveBase($shop_name, $shop_manager, $loc_id, $tel, $type, $codem, $addr)
+
+function saveBase($shop_name, $shop_manager, $loc_id, $tel, $type, $codem, $addr, $insta_id = null)
 {
     db();
     if ($loc_id == null || $loc_id == 0) {
@@ -433,7 +628,7 @@ function saveBase($shop_name, $shop_manager, $loc_id, $tel, $type, $codem, $addr
                 $rs = mysqli_fetch_assoc($resi);
                 return $rs['id'];
             } else {
-                $sqlc = "INSERT INTO `base`(`id`, `shop_name`, `shop_manager`,`loc_id`, `tel`, `type`, `city`, `hood`,`codem`) VALUES(Null, '" . $shop_name . "', '" . $shop_manager . "','" . $loc_id . "','" . $tel . "','" . $type . "','" . $city . "', '" . $hood . "', '" . $codem . "')";
+                $sqlc = "INSERT INTO `base`(`id`, `shop_name`, `shop_manager`,`loc_id`, `tel`, `type`, `city`, `hood`,`codem`,`insta_id`) VALUES(Null, '" . $shop_name . "', '" . $shop_manager . "','" . $loc_id . "','" . $tel . "','" . $type . "','" . $city . "', '" . $hood . "', '" . $codem . "', '" . $insta_id . "')";
                 $resulti = mysqli_query($GLOBALS['conn'], $sqlc);
                 $sqlba = "SELECT * FROM base WHERE shop_name='" . $shop_name . "' AND shop_manager='" . $shop_manager . "' AND loc_id='" . $loc_id . "'";
                 $resi = mysqli_query($GLOBALS['conn'], $sqlb);
@@ -453,7 +648,7 @@ function saveBase($shop_name, $shop_manager, $loc_id, $tel, $type, $codem, $addr
                 $rs = mysqli_fetch_assoc($resi);
                 return $rs['id'];
             } else {
-                $sqlc = "INSERT INTO `base`(`id`, `shop_name`, `shop_manager`,`loc_id`, `tel`, `type`, `city`, `hood`,`codem`) VALUES(Null, '" . $shop_name . "', '" . $shop_manager . "','" . $loc_id . "','" . $tel . "','" . $type . "','" . $city . "', '" . $hood . "', '" . $codem . "')";
+                $sqlc = "INSERT INTO `base`(`id`, `shop_name`, `shop_manager`,`loc_id`, `tel`, `type`, `city`, `hood`,`codem`,`insta_id`) VALUES(Null, '" . $shop_name . "', '" . $shop_manager . "','" . $loc_id . "','" . $tel . "','" . $type . "','" . $city . "', '" . $hood . "', '" . $codem . "')";
                 $resulti = mysqli_query($GLOBALS['conn'], $sqlc);
                 $sqlba = "SELECT * FROM base WHERE shop_name='" . $shop_name . "' AND shop_manager='" . $shop_manager . "' AND loc_id='" . $loc_id . "'";
                 $resi = mysqli_query($GLOBALS['conn'], $sqlb);
@@ -664,7 +859,7 @@ function get_factor_2($factor_id)
         $cat_name = $rs['short_name'];
 
         db();
-        $sql = "SELECT * FROM factor WHERE factor_id=" . $factor_id . " AND cat_id = " . $cat . " ORDER BY cat_id ASC";
+        $sql = "SELECT * FROM factor WHERE factor_id=" . $factor_id . " AND cat_id = " . $cat . " AND tedad >0 OR factor_id=" . $factor_id . " AND cat_id = " . $cat . " AND offer >0 OR factor_id=" . $factor_id . " AND cat_id = " . $cat . " AND tester >0 ORDER BY cat_id ASC";
         $res = mysqli_query($GLOBALS['conn'], $sql);
         $num = mysqli_num_rows($res);
 
@@ -734,7 +929,7 @@ function get_factor_2($factor_id)
                 }
                 $cbd_extract[$factor_id][$i]['shop_type'] = $customer_type;
 
-                $sqla = "SELECT * FROM prod WHERE code=" . $prod_id;
+                $sqla = "SELECT * FROM prod WHERE code=" . $prod_id . " OR tester_code = " . $prod_id;
                 $resa = mysqli_query($GLOBALS['conn'], $sqla);
                 $ra = mysqli_fetch_assoc($resa);
                 $vol = $ra['vol'];
@@ -933,11 +1128,23 @@ function factor_detail($factor_id)
     return $detail;
 }
 
-function saveTasviye($factor_id, $tasviye, $desc)
+function saveTasviye($factor_id, $tasviye, $desc, $type, $extra_less)
 {
     db();
 
-    $w = "UPDATE `cbd` SET `tasviye` = '" . $tasviye . "',`desc` = '" . $desc . "' WHERE  `factor_id` = '" . $factor_id . "'";
+    if ($type == 'رسمی') {
+        $extra = 9;
+    } else {
+        $extra = 0;
+    }
+
+    $xx = getInfo($_COOKIE['uid']);
+    if ($xx['line'] == 5) {
+        $w = "UPDATE `cbd` SET `extra_less` = '" . $extra_less . "',`tasviye` = '" . $tasviye . "',`auth` = '" . $desc . "',`factor_type` = '" . $type . "',`extra_add` = '" . $extra . "' WHERE  `factor_id` = '" . $factor_id . "'";
+    } else {
+        $w = "UPDATE `cbd` SET `extra_less` = '" . $extra_less . "',`tasviye` = '" . $tasviye . "',`desc` = '" . $desc . "',`factor_type` = '" . $type . "',`extra_add` = '" . $extra . "' WHERE  `factor_id` = '" . $factor_id . "'";
+    }
+
     $rr = mysqli_query($GLOBALS['conn'], $w);
     if ($rr) {
         return 1;
@@ -1064,7 +1271,7 @@ function get_my_factor($uid)
     $result_arr = [];
 
     db();
-    $sql = "SELECT * FROM cbd WHERE uid = " . $uid . " AND accept IS NOT NULL ORDER BY id DESC LIMIT 0,30";
+    $sql = "SELECT * FROM cbd WHERE uid = " . $uid . " ORDER BY id DESC LIMIT 0,60";
     $r = mysqli_query($GLOBALS['conn'], $sql);
     if ($r) {
         $num = mysqli_num_rows($r);
@@ -1080,6 +1287,8 @@ function get_my_factor($uid)
                     $jalali_date = jdate("Y/m/d", $timestamp);
                     $saat = $login[1];
                     $shop_id = $row['shop_id'];
+                    $del_pos = $row['del_pos'];
+                    $factor_type = $row['factor_type'];
 
                     $sqli = "SELECT * FROM `base` WHERE id = " . $shop_id;
                     $ri = mysqli_query($GLOBALS['conn'], $sqli);
@@ -1116,6 +1325,8 @@ function get_my_factor($uid)
                         'hood' => $hood,
                         'tel' => $tel,
                         'sum' => $jaam,
+                        'del_pos' => $del_pos,
+                        'factor_type' => $factor_type,
                     ];
                 }
             }
@@ -1293,7 +1504,7 @@ function search_customer($text)
     $sell_visitor = '';
 
     db();
-    $sql = "SELECT * FROM `moshtari` WHERE `esm` LIKE '%" . $text . "%' OR `addr` LIKE '%" . $text . "%' OR `city` LIKE '%" . $text . "%'";
+    $sql = "SELECT * FROM `moshtari` WHERE `esm` LIKE '%" . $text . "%' OR `addr` LIKE '%" . $text . "%' ORDER BY `mande` DESC";
     $result = mysqli_query($GLOBALS['conn'], $sql);
     if ($result) {
         $num = mysqli_num_rows($result);
@@ -1305,16 +1516,49 @@ function search_customer($text)
                     $y = explode(')', $x[1]);
                     $esm = $x[0];
                     $shop = $y[0];
-                    //$hood = trim($y[1]);
-                    $hood = '-';
                 } else {
                     $esm = $row['esm'];
                     $shop = '-';
-                    $hood = '-';
                 }
 
                 $codes = $row['code'];
-                $sqlq = "SELECT * FROM `mande` WHERE `code` = '$codes'";
+                if ($row['mande'] > 0) {
+                    $bed = sep3($row['mande']) . ' ریال';
+                    $bes = 0;
+                } else {
+                    $bes = sep3($row['mande'] * (-1)) . ' ریال';
+                    $bed = 0;
+                }
+
+                if ($row['tarikh']) {
+                    $zama1 = substr($row['tarikh'], 0, 4);
+                    $zama2 = substr($row['tarikh'], 4, 2);
+                    $zama3 = substr($row['tarikh'], 6, 2);
+                    if ($zama3 < 10) {
+                        $zama3 = '0' . $zama3;
+                    }
+                    $zama = $zama1 . '/' . $zama2 . '/' . $zama3;
+                } else {
+                    $zama = '-';
+                }
+
+                $score = score($row['code']);
+
+                $results[$i] = [
+                    'id' => $row['id'],
+                    'code' => $row['code'],
+                    'name' => $esm,
+                    'shop' => $shop,
+                    'addr' => $row['addr'],
+                    'tel' => $row['tel'],
+                    'bed' => $bed,
+                    'bes' => $bes,
+                    'score' => $score,
+                    'tarikh' => 'تاریخ آخرین فاکتور: ' . $zama,
+                    'real_bed' => $row['mande'],
+                ];
+
+                /*                 $sqlq = "SELECT * FROM `mande` WHERE `code` = '$codes'";
                 $resultq = mysqli_query($GLOBALS['conn'], $sqlq);
                 if ($resultq) {
                     $numq = mysqli_num_rows($resultq);
@@ -1326,9 +1570,9 @@ function search_customer($text)
                         $bed = 0;
                         $bes = 0;
                     }
-                }
+                } */
 
-                $c = substr($codes, 1);
+                /*                 $c = substr($codes, 1);
                 $sqlqa = "SELECT * FROM `sell` WHERE `code` = '$c' ORDER BY `id` DESC";
                 $resultqa = mysqli_query($GLOBALS['conn'], $sqlqa);
                 if ($resultqa) {
@@ -1348,24 +1592,7 @@ function search_customer($text)
                         $sell_tarikh = '-';
                         $sell_fee = '-';
                     }
-                }
-
-
-                $results[$i] = [
-                    'id' => $row['id'],
-                    'code' => $row['code'],
-                    'name' => $esm,
-                    'shop' => $shop,
-                    'addr' => $row['addr'],
-                    'tel' => $row['tel'],
-                    'city' => $row['city'],
-                    'hood' => $hood,
-                    'bed' => $bed,
-                    'bes' => $bes,
-                    'sell_visitor' => $sell_visitor,
-                    'sell_tarikh' => $sell_tarikh,
-                    'sell_fee' => $sell_fee
-                ];
+                } */
             }
             return $results;
         } else {
@@ -1548,4 +1775,260 @@ function store($factor_id, $store_pos)
     } else {
         return 0;
     }
+}
+
+function masir()
+{
+    db();
+    $ostan = '';
+    $masir = '';
+    $sql = "SELECT * FROM `masir` WHERE `pos`=1 ORDER BY `ostan` ASC";
+    $resultiq = mysqli_query($GLOBALS['conn'], $sql);
+    $num = mysqli_num_rows($resultiq);
+    for ($i = 0; $i < $num; $i++) {
+        $r = mysqli_fetch_assoc($resultiq);
+        $id = $r['id'];
+        $city = $r['city'];
+        $origin = $r['origin'];
+        $os = $r['ostan'];
+        $destination = $r['destination'];
+        if ($ostan == $os) {
+            $masir .= '<option value="' . $id . '" origin="' . $origin . '" destin="' . $destination . '">' . $city . '</option>';
+        } else {
+            $masir .= '
+            <optgroup label="' . $os . '"></optgroup>
+            <option value="' . $id . '" origin="' . $origin . '" destin="' . $destination . '">' . $city . '</option>';
+            $ostan = $os;
+        }
+    }
+
+    return $masir;
+}
+
+function get_geo($city)
+{
+    db();
+    $sql = "SELECT * FROM `masir` WHERE `id` = '" . $city . "'";
+    $resultiq = mysqli_query($GLOBALS['conn'], $sql);
+    $r = mysqli_fetch_assoc($resultiq);
+    return $r['origin'] . ',' . $r['destination'];
+}
+
+function get_masir($arr)
+{
+    db();
+    $araye = [];
+    $sql = "SELECT * FROM `masir` WHERE `city` = '" . $arr . "'";
+    $resultiq = mysqli_query($GLOBALS['conn'], $sql);
+    if ($resultiq) {
+        $num = mysqli_num_rows($resultiq);
+        if ($num > 0) {
+            $r = mysqli_fetch_assoc($resultiq);
+            $city = $r['city'];
+            $id = $r['id'];
+            $origin = $r['origin'];
+            $destin = $r['destination'];
+            $araye[0] = ['id' => $id, 'city' => $city, 'origin' => $origin, 'destin' => $destin];
+            return json_encode($araye);
+        } else {
+            return 0;
+        }
+    } else {
+        return 0;
+    }
+}
+
+function sum_masir($loc1, $loc2)
+{
+    $o = explode(',', $loc1);
+    $d = explode(',', $loc2);
+
+    $o1 = $o[0];
+    $o2 = $o[1];
+    $d1 = $d[0];
+    $d2 = $d[1];
+
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => 'https://api.neshan.org/v1/distance-matrix?type=car&origins=' . $loc1 . '&destinations=' . $loc2,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'GET',
+        CURLOPT_HTTPHEADER => array(
+            'Api-Key: service.wEM7HjVHSAsKcAYPBfNpEaqNuQqvSpHo3tvLNrsG'
+        ),
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+    $x = json_decode($response, true);
+    return round(($x['rows'][0]['elements'][0]['distance']['value']) / 1000, 0, PHP_ROUND_HALF_UP);
+}
+
+function new_mission($uid, $mission_name, $route, $s_unix, $s_fa, $e_unix, $e_fa, $device, $vehicle, $p_2, $p_al, $p_3, $p_city)
+{
+    db();
+    $user_info = getInfo1($uid);
+    $food_price = $user_info['food'];
+    $home_price = $user_info['home'];
+    $travel_price = $user_info['travel'];
+
+
+    $sum_masir = 0;
+    $uid = $_COOKIE['uid'];
+    $date = date("Y-m-d H:i:s");
+    $diff = ($e_unix - $s_unix) / (1000 * 3600 * 24); // convert to day
+    $vehicle_num = $p_2 . '-' . $p_al . '-' . $p_3 . '-' . $p_city;
+    $mabda = '36.3104,59.5757';
+    $origin_ = '36.3104,59.5757';
+
+    switch ($device) {
+        case 1:
+            $d = 'سواری';
+            break;
+        case 2:
+            $d = 'وانت';
+            break;
+        case 3:
+            $d = 'اتوبوس';
+            break;
+    }
+
+    $masir = explode(',', $route);
+    $count = count($masir) - 1;
+    for ($i = 0; $i < $count; $i++) {
+        $loc = get_geo(trim($masir[$i]));
+        $sum_masir += sum_masir($origin_, $loc);
+        $origin_ = $loc;
+    }
+
+    $sum_masir += sum_masir($loc, $mabda);
+
+    if ($diff >= 1) {
+        $home = ($diff) * $home_price;
+        $food = ($diff + 1) * $food_price;
+        $travel = $sum_masir * $travel_price;
+    } else {
+        $home = 0;
+        $food = ($diff + 1) * $food_price;
+        $travel = $sum_masir * $travel_price;
+    }
+
+    $sql = "INSERT INTO `mission`(`id`,`uid`,`mission_name`,`date`,`start_unix`,`start_fa`,`end_unix`,`end_fa`,`route`,`vehicle_name`,`vehicle_num`,`home`,`food`,`travel`,`sign`,`accept_time`,`p2`,`alph`,`p3`,`p4`) 
+    VALUES(NULL, '" . $uid . "','" . $mission_name . "','" . $date . "','" . $s_unix . "','" . $s_fa . "','" . $e_unix . "','" . $e_fa . "',
+    '" . $route . "','" . $d . ' ' . $vehicle . "','" . $vehicle_num . "','" . $home . "','" . $food . "','" . $travel . "',NULL,NULL,'" . $p_2 . "','" . $p_al . "','" . $p_3 . "','" . $p_city . "')";
+    $r = mysqli_query($GLOBALS['conn'], $sql);
+
+    if ($r) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+function show_on_map($origin, $addr)
+{
+
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => 'https://api.alopeyk.com/api/v2/screenshots?markers=origin,' . $origin . '|' . $addr,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'GET',
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+    echo $response;
+}
+
+function score($customer_id)
+{
+    db();
+    $sql = "SELECT SUM(total) FROM `score` WHERE customer_id =" . $customer_id;
+    $result = mysqli_query($GLOBALS['conn'], $sql);
+    $r = mysqli_fetch_assoc($result);
+    $sum_total = $r['SUM(total)'];
+    return $sum_total;
+}
+
+function delete_order($f_id)
+{
+    db();
+    $sql = "UPDATE cbd SET del_pos = 1 WHERE factor_id='" . $f_id . "'";
+    $r = mysqli_query($GLOBALS['conn'], $sql);
+    if ($r) {
+        return 1;
+    }
+}
+
+function mojudi($code, $nums)
+{
+    db();
+    $cat = 0;
+    $zaman = date("ymd") . '0000000000000000';
+
+    $sql = "SELECT * FROM `factor` WHERE `factor_id` >=" . $zaman . " AND `prod_id` = " . $code;
+    $result = mysqli_query($GLOBALS['conn'], $sql);
+    $n = mysqli_num_rows($result);
+    $sm = 0;
+    for ($i = 0; $i < $n; $i++) {
+        $r = mysqli_fetch_assoc($result);
+        $sm += $r['tedad'] + $r['offer'];
+    }
+
+    $sqlia = "SELECT * FROM `prod` WHERE `code` =" . $code;
+    $resultia = mysqli_query($GLOBALS['conn'], $sqlia);
+    $ria = mysqli_fetch_assoc($resultia);
+    $parent = $ria['parent'];
+
+    $sqliaw = "SELECT * FROM `parent` WHERE `id` =" . $parent;
+    $resultiaw = mysqli_query($GLOBALS['conn'], $sqliaw);
+    $riaw = mysqli_fetch_assoc($resultiaw);
+    $minimum = $riaw['minimum'];
+
+    $sqli = "SELECT * FROM `mojudi` WHERE `code` =" . $code;
+    $resulti = mysqli_query($GLOBALS['conn'], $sqli);
+    $ri = mysqli_fetch_assoc($resulti);
+    $sum = $ri['tedad'];
+    $remain = $sum - $sm - $nums;
+    if ($remain > $minimum) {
+        $last_mande = $sum - $nums;
+
+        $sq = "UPDATE `mojudi` SET `tedad` = " . $last_mande . " WHERE `code` = '$code'";
+        $res = mysqli_query($GLOBALS['conn'], $sq);
+        if ($res) {
+            return $remain;
+        }
+    } else {
+        return -1;
+    }
+}
+
+function check_mojudi($prod_id)
+{
+    db();
+    $s = "SELECT * FROM `prod` WHERE `code` = '" . $prod_id . "'";
+    $w = mysqli_query($GLOBALS['conn'], $s);
+    $r = mysqli_fetch_assoc($w);
+    $new = $r['new'];
+
+    $a = "SELECT * FROM `mojudi` WHERE `code` ='" . $prod_id . "'";
+    $b = mysqli_query($GLOBALS['conn'], $a);
+    $c = mysqli_fetch_assoc($b);
+    $tedad = $c['tedad'];
+
+    return $new . ',' . $tedad;
 }

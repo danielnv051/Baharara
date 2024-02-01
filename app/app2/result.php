@@ -13,7 +13,11 @@ if (isset($_POST['code'])) {
 
 if ($info['visit_pos'] == '+') {
     $tarikh = date('Y-m-d');
-    $link = '<a target="_blank" href="https://perfumeara.com/webapp/app_new/panel/factor.php?f=' . $f_id . '&d=' . $tarikh . '">نمایش فاکتور</a>';
+    if ($info['line'] == 5) {
+        $link = '<a target="_blank" href="https://perfumeara.com/webapp/app_new/panel/factor.php?f=' . $f_id . '&d=' . $tarikh . '&p=pay">نمایش فاکتور</a>';
+    } else {
+        $link = '<a target="_blank" href="https://perfumeara.com/webapp/app_new/panel/factor.php?f=' . $f_id . '&d=' . $tarikh . '">نمایش فاکتور</a>';
+    }
 } else {
     $tarikh = date('Y-m-d');
     $link = '';
@@ -28,7 +32,7 @@ $cont = '
             <script src="https://h5p.org/sites/all/modules/h5p/library/js/h5p-resizer.js" charset="UTF-8"></script>
             <input type="hidden" id="link" value="https://perfumeara.com/webapp/app1/panel/factor.php?f=' . $f_id . '&d=' . $tarikh . '"/>
             <div id="buy_pos">
-                <button class="btn btn-warning" id="saveResult" onclick="saveResult()">ذخیره ویزیت</button>
+                <button class="btn btn-warning" id="saveResult" onclick="saveResults()">ذخیره ویزیت</button>
             </div>
     </fieldset>
 </div>';
@@ -70,34 +74,31 @@ require_once('slider.php'); ?>
 <script src="./js/jquery-3.4.1.min.js"></script>
 <script src="./js/index.js"></script>
 <script>
-    function saveResult() {
+    function saveResults() {
         resul = $('#visit_text').val();
-        if (resul == '') {
-            alert('نتیجه ویزیت را به درستی وارد کنید');
-        } else {
-            $.ajax({
-                type: "GET",
-                url: "server.php",
-                data: {
-                    result: $("#visit_text").val(),
-                },
-                success: function(data) {
+        $.ajax({
+            type: "GET",
+            url: "server.php",
+            data: {
+                result: $("#visit_text").val(),
+            },
+            success: function(data) {
 
-                    $.ajax({
-                        type: "GET",
-                        url: "result.php",
-                        data: {
-                            final: 'ok',
-                        },
-                        success: function(data) {
-                            $('.items').hide();
-                            $('.final').css('display', 'flex');
-                        },
-                    });
+                $.ajax({
+                    type: "GET",
+                    url: "result.php",
+                    data: {
+                        final: 'ok',
+                    },
+                    success: function(data) {
+                        $('.items').hide();
+                        $('.final').css('display', 'flex');
+                    },
+                });
 
-                },
-            });
-        }
+            },
+        });
+
     }
 </script>
 
