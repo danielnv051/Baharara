@@ -8,6 +8,7 @@ $sum_less = 0;
 $shop_manager_name = '';
 $manategh = [];
 $factor_ext = [];
+$visitor_manategh = [];
 
 $sum_tedad_kol = 0;
 $sum_offer_kol = 0;
@@ -139,6 +140,7 @@ function getInfo($uid)
             $info['sign'] = $x[10];
             $info['line'] = $row['line'];
             $info['family'] = $row['family'];
+            $info['both'] = $row['both'];
 
             if ($x[10]) {
                 $info['sign'] = $x[10];
@@ -266,7 +268,7 @@ function get_prod($cat)
     $sql = "SELECT * FROM `prod` WHERE `parent` =" . $cat . " AND `fee`>2 ORDER BY `name` ASC";
     $resultiq = mysqli_query($GLOBALS['conn'], $sql);
     $num = mysqli_num_rows($resultiq);
-    echo '<fieldset class="hor" style="height: fit-content; margin: 3.5rem auto -2rem;" class="factor_2">';
+    echo '<fieldset class="hor" style="padding: 0 1rem;border-radius:0;height: fit-content; margin: 3.5rem auto -2rem;" class="factor_2">';
     for ($i = 0; $i < $num; $i++) {
         $r = mysqli_fetch_assoc($resultiq);
         $name = $r['name'];
@@ -283,7 +285,7 @@ function get_prod($cat)
         if ($mm[0] != NULL || $mm[0] != '') {
         }
 
-        $sql_req = "SELECT tedad,offer FROM factor WHERE factor_id>$zaman_req AND cat_id = $code";
+        $sql_req = "SELECT tedad,offer,extra_less FROM factor WHERE factor_id>$zaman_req AND cat_id = $code";
         $result_req = mysqli_query($GLOBALS['conn'], $sql_req);
         $num_req = mysqli_num_rows($result_req);
 
@@ -431,12 +433,12 @@ function get_prod($cat)
             <table>
                 <tr>
                     <td colspan="1" style="text-align: right;">
-                        <button ' . $ps . ' class="btn btn-default" style="width: 3rem; height: 3rem;margin: 0.8rem auto;width: 46vw;" onclick="save_orders(' . $code . ', ' . $cat . ')" id="btn_order' . $code . '">
+                        <button ' . $ps . ' class="btn btn-default" style="height: 3rem;margin: 0.8rem auto;width: 43vw;" onclick="save_orders(' . $code . ', ' . $cat . ')" id="btn_order' . $code . '">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cart-check-fill" viewBox="0 0 16 16">
                                 <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1.646-7.646-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708z"/>
                             </svg>
                         </button>
-                        <button ' . $ps . ' class="btn btn-danger" style="background-color:#dc3545;width: 3rem; height: 3rem;margin: 0.8rem auto;width: 46vw;" onclick="del_order(' . $code . ')" id="del_order' . $code . '">
+                        <button ' . $ps . ' class="btn btn-danger" style="background-color:#dc3545;width: 43vw; height: 3rem;margin: 0.8rem auto;" onclick="del_order(' . $code . ')" id="del_order' . $code . '">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
                                 <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
                             </svg>
@@ -494,9 +496,7 @@ function saveVar($uid, $x = null, $wipe = 0, $yn = false)
 function add_factor($uid, $factor_id, $cat_id, $prod_id, $tedad, $offer, $tester, $price_total, $price_pay, $tester_type, $insta_off)
 {
     db();
-    if ($insta_off == '') {
-        $insta_off = 0;
-    }
+
     $sql = "SELECT * FROM factor WHERE uid=" . $uid . " AND factor_id=" . $factor_id . " AND prod_id=" . $prod_id;
     $result = mysqli_query($GLOBALS['conn'], $sql);
     if ($result) {
@@ -548,12 +548,12 @@ function add_factor($uid, $factor_id, $cat_id, $prod_id, $tedad, $offer, $tester
                 if ($numa > 0) {
                     $c = mysqli_fetch_assoc($resulta);
                     $idd = $c['id'];
-                    $sqlq = "UPDATE factor SET tedad='0',offer='0',tester='0',price_total='" . $price_total . "',price_pay='" . $price_pay . "' WHERE id=" . $idd;
+                    $sqlq = "UPDATE factor SET tedad='0',offer='0',tester='0',price_total='" . $price_total . "',price_pay='" . $price_pay . "',extra_less='" . $insta_off . "' WHERE id=" . $idd;
                     $rq = mysqli_query($GLOBALS['conn'], $sqlq);
                     $sqlq = "UPDATE factor SET tedad='0',offer='0',tester='" . $tester . "',price_total='" . $price_total . "',price_pay='" . $price_pay . "' WHERE id=" . $idd;
                     $rq = mysqli_query($GLOBALS['conn'], $sqlq);
                 } elseif ($num == 0) {
-                    $sqlq = "INSERT INTO `factor`(`id`, `uid`, `factor_id`, `cat_id`, `prod_id`, `tedad`, `offer`, `tester`, `price_total`, `price_pay`) VALUES(Null, '$uid', '$factor_id', '$cat_id', '$prod_id', '$tedad', '$offer', '0', '$price_total', '$price_pay')";
+                    $sqlq = "INSERT INTO `factor`(`id`, `uid`, `factor_id`, `cat_id`, `prod_id`, `tedad`, `offer`, `tester`, `price_total`, `price_pay`, `insta_off`) VALUES(Null, '$uid', '$factor_id', '$cat_id', '$prod_id', '$tedad', '$offer', '0', '$price_total', '$price_pay','$insta_off')";
                     $resultq = mysqli_query($GLOBALS['conn'], $sqlq);
                     $last_id = mysqli_insert_id($GLOBALS['conn']);
                     $sqlq = "INSERT INTO `factor`(`id`, `uid`, `factor_id`, `cat_id`, `prod_id`, `tedad`, `offer`, `tester`, `price_total`, `price_pay`,`related_id`) VALUES(Null, '$uid', '$factor_id', '$tester_type', '$testers', '0', '0', '$tester', '$price_total', '$price_pay','$last_id')";
@@ -561,7 +561,6 @@ function add_factor($uid, $factor_id, $cat_id, $prod_id, $tedad, $offer, $tester
                 }
             }
         }
-
         return 1;
     }
 }
@@ -1404,6 +1403,7 @@ function getRemainCash($name)
 {
     db();
     $info = [];
+
     $sql = "SELECT * FROM remain_cash WHERE seller LIKE'%" . $name . "%' ORDER BY id ASC";
     $result = mysqli_query($GLOBALS['conn'], $sql);
     if ($result) {
@@ -1416,6 +1416,16 @@ function getRemainCash($name)
                 } else {
                     $debt = $row['desc_pos'];
                 }
+
+                $customer = $row['customer'];
+                $s = "SELECT * FROM moshtari WHERE esm LIKE '%" . $customer . "%'";
+                $r = mysqli_query($GLOBALS['conn'], $s);
+                $n = mysqli_num_rows($r);
+                if ($n > 0) {
+                    $rs = mysqli_fetch_assoc($r);
+                    $GLOBALS['visitor_manategh'][$rs['region']] = '';
+                }
+
                 $info[$i] = [
                     "no" => $row['no'],
                     "cat" => $row['cat'],
@@ -1426,6 +1436,7 @@ function getRemainCash($name)
                     "date_pos" => $row['date_pos'],
                     "desc_pos" => $debt,
                     "desc" => $row['desc'],
+                    "region" => $rs['region'],
                 ];
             }
         } else {
@@ -1438,13 +1449,27 @@ function getRemainCash($name)
 function get_prod_kasri()
 {
     db();
-    echo '<div id="all_prod" style="margin-top:0;padding: 1rem;">';
+    $par = '';
     $sql = "SELECT * FROM `prod` WHERE `pos` =0 ORDER BY `parent`,`id` ASC";
     $resultiq = mysqli_query($GLOBALS['conn'], $sql);
     $num = mysqli_num_rows($resultiq);
-    echo '<fieldset class="hor" style="height: fit-content; margin: 3.5rem auto -2rem;" class="factor_2">';
+    echo '<div id="all_prod" style="margin-top:0;padding: 1rem;">';
+    echo '<fieldset class="hor" style="height: fit-content; margin: 0rem auto -2rem;" class="factor_2">';
     for ($i = 0; $i < $num; $i++) {
         $r = mysqli_fetch_assoc($resultiq);
+
+        if ($par != $r['parent']) {
+            $par = $r['parent'];
+            $sql_ = "SELECT * FROM `parent` WHERE `id` = $par";
+            $resultiq_ = mysqli_query($GLOBALS['conn'], $sql_);
+            $r_ = mysqli_fetch_assoc($resultiq_);
+            $parent_title = $r_['short_name'];
+
+            echo '
+            <div class="kasri_title">' . $parent_title . '</div>
+            ';
+        }
+
         $name = $r['name'];
         $code = $r['code'];
         $fee = $r['fee'];
@@ -1681,8 +1706,15 @@ function get_my_return_factor($uid)
     $ro = mysqli_fetch_assoc($ri);
     $family = $ro['family'];
 
+    $sqlv = "SELECT DISTINCT(region) FROM `marju` WHERE visitor = '$family'";
+    $rv = mysqli_query($GLOBALS['conn'], $sqlv);
+    $rnum = mysqli_num_rows($rv);
+    for ($b = 0; $b < $rnum; $b++) {
+        $rov = mysqli_fetch_assoc($rv);
+        $GLOBALS['visitor_manategh'][$b] = $rov['region'];
+    }
 
-    $sql = "SELECT * FROM `marju` WHERE `visitor` LIKE '%" . $family . "%' ORDER BY `tarikh` DESC LIMIT 0,20;";
+    $sql = "SELECT * FROM `marju` WHERE `visitor` LIKE '%" . $family . "%' ORDER BY `region`,`id` DESC LIMIT 0,20;";
     $r = mysqli_query($GLOBALS['conn'], $sql);
     if ($r) {
         $num = mysqli_num_rows($r);
@@ -1697,6 +1729,7 @@ function get_my_return_factor($uid)
                 $desc = $row['desc'];
                 $region = $row['region'];
                 $esm = $row['esm'];
+                $cat = $row['cat'];
 
                 if (strpos($row['esm'], '(')) {
                     $x = explode('(', $row['esm']);
@@ -1717,6 +1750,7 @@ function get_my_return_factor($uid)
                     'tel' => $tel,
                     'desc' => $desc,
                     'region' => $region,
+                    'cat' => $cat,
                 ];
             }
         }
@@ -1920,9 +1954,9 @@ function new_mission($uid, $mission_name, $route, $s_unix, $s_fa, $e_unix, $e_fa
         $travel = $sum_masir * $travel_price;
     }
 
-    $sql = "INSERT INTO `mission`(`id`,`uid`,`mission_name`,`date`,`start_unix`,`start_fa`,`end_unix`,`end_fa`,`route`,`vehicle_name`,`vehicle_num`,`home`,`food`,`travel`,`sign`,`accept_time`,`p2`,`alph`,`p3`,`p4`) 
+    $sql = "INSERT INTO `mission`(`id`,`uid`,`mission_name`,`date`,`start_unix`,`start_fa`,`end_unix`,`end_fa`,`route`,`vehicle_name`,`vehicle_num`,`home`,`food`,`travel`,`sign`,`accept_time`,`p2`,`alph`,`p3`,`p4`,`type`) 
     VALUES(NULL, '" . $uid . "','" . $mission_name . "','" . $date . "','" . $s_unix . "','" . $s_fa . "','" . $e_unix . "','" . $e_fa . "',
-    '" . $route . "','" . $d . ' ' . $vehicle . "','" . $vehicle_num . "','" . $home . "','" . $food . "','" . $travel . "',NULL,NULL,'" . $p_2 . "','" . $p_al . "','" . $p_3 . "','" . $p_city . "')";
+    '" . $route . "','" . $d . ' ' . $vehicle . "','" . $vehicle_num . "','" . $home . "','" . $food . "','" . $travel . "',NULL,NULL,'" . $p_2 . "','" . $p_al . "','" . $p_3 . "','" . $p_city . "',1)";
     $r = mysqli_query($GLOBALS['conn'], $sql);
 
     if ($r) {
@@ -1997,23 +2031,30 @@ function mojudi($code, $nums)
     $sqliaw = "SELECT * FROM `parent` WHERE `id` =" . $parent;
     $resultiaw = mysqli_query($GLOBALS['conn'], $sqliaw);
     $riaw = mysqli_fetch_assoc($resultiaw);
-    $minimum = $riaw['minimum'];
+    $minimum = intval($riaw['minimum']);
 
     $sqli = "SELECT * FROM `mojudi` WHERE `code` =" . $code;
     $resulti = mysqli_query($GLOBALS['conn'], $sqli);
-    $ri = mysqli_fetch_assoc($resulti);
-    $sum = $ri['tedad'];
-    $remain = $sum - $sm - $nums;
-    if ($remain > $minimum) {
-        $last_mande = $sum - $nums;
+    if ($resulti) {
+        $nn = mysqli_num_rows($resulti);
+        if ($nn > 0) {
+            $ri = mysqli_fetch_assoc($resulti);
+            $sum = $ri['tedad'];
+            $remain = intval($sum) - intval($sm) - intval($nums);
+            if ($remain > $minimum) {
+                $last_mande = intval($sum) - intval($nums);
 
-        $sq = "UPDATE `mojudi` SET `tedad` = " . $last_mande . " WHERE `code` = '$code'";
-        $res = mysqli_query($GLOBALS['conn'], $sq);
-        if ($res) {
-            return $remain;
+                $sq = "UPDATE `mojudi` SET `tedad` = " . $last_mande . " WHERE `code` = '$code'";
+                $res = mysqli_query($GLOBALS['conn'], $sq);
+                if ($res) {
+                    return $remain;
+                }
+            } else {
+                return -1;
+            }
+        } else {
+            return -1;
         }
-    } else {
-        return -1;
     }
 }
 
@@ -2027,8 +2068,17 @@ function check_mojudi($prod_id)
 
     $a = "SELECT * FROM `mojudi` WHERE `code` ='" . $prod_id . "'";
     $b = mysqli_query($GLOBALS['conn'], $a);
-    $c = mysqli_fetch_assoc($b);
-    $tedad = $c['tedad'];
+    $n = mysqli_num_rows($b);
+    if ($n > 0) {
+        $c = mysqli_fetch_assoc($b);
+        $tedad = $c['tedad'];
+    } else {
+        $tedad = 0;
+    }
+
+    if ($new == NULL || $new == '') {
+        $new = 0;
+    }
 
     return $new . ',' . $tedad;
 }

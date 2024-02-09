@@ -267,7 +267,7 @@ function order_info($zaman)
                 $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` ='" . $u_id . "'  ORDER BY `id` desc";
             }
         } else {
-            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` != '100' AND `uid` != '200' AND `uid` != '300' ORDER BY `id` desc";
+            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` != '100' AND `uid` != '200' AND `uid` != '300' AND `uid`!=22 ORDER BY `id` desc";
         }
     } else {
         $zamani = '2401210000000000000000';
@@ -287,6 +287,7 @@ function order_info($zaman)
             $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` != '100' AND `uid` != '200' AND `uid` != '300' ORDER BY `id` desc";
         }
     }
+
 
     $result = mysqli_query($GLOBALS['conn'], $sql);
     $num = mysqli_num_rows($result);
@@ -1237,7 +1238,6 @@ function payment_type_sep($payment_type = null, $pos = false)
 
                 $('tr.nofactor').hide();
                 $('tr.d1').hide();
-                //window.location.assign(masir + pos);
             }
 
             function show_acc() {

@@ -77,16 +77,12 @@ if (isset($_POST['type']) && $_POST['type'] == 'register') {
     $base_fee = $_GET['base_fee'];
     $final_fee = $_GET['final_fee'];
     $tester_type = $_GET['tester_type'];
-
-    if (isset($_GET['insta_off '])) {
-        $insta_off = $_GET['insta_off'];
-    } else {
-        $insta_off  = '';
-    }
+    $insta_off = $_GET['insta_off'];
+    $i_off = intval($insta_off);
 
     $info = getInfo($_COOKIE['uid']);
-    $z = add_factor($_COOKIE['uid'], $info['factor_id'], $_GET['cat'], $code, $tedad, $offer, $tester, $base_fee, $final_fee, $tester_type, $insta_off);
-    echo $z;
+    $z = add_factor($_COOKIE['uid'], $info['factor_id'], $_GET['cat'], $code, $tedad, $offer, $tester, $base_fee, $final_fee, $tester_type, $i_off);
+    //echo $z;
 } elseif (isset($_GET['basket'])) {
     $code = $_GET['code'];
     $info = getInfo($_COOKIE['uid']);

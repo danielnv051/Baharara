@@ -584,6 +584,8 @@ function get_factor($factor_id)
             $cbd_extract[$factor_id][$i]['shop_manager'] = $rc['shop_manager'];
             $cbd_extract[$factor_id][$i]['shop_tel'] = $rc['tel'];
             $cbd_extract[$factor_id][$i]['line'] = $tt['line'];
+            $cbd_extract[$factor_id][$i]['acc'] = $tt['acc'];
+            $cbd_extract[$factor_id][$i]['both'] = $tt['both'];
 
             if ($rc['type'] == 'old') {
                 $customer_type = 'قدیم';
@@ -1641,4 +1643,26 @@ function get_paper_accept($id, $type, $pass, $signer)
             break;
     }
     return $accept;
+}
+
+function zarinpal($num_trans)
+{
+    db();
+    $info[$num_trans] = [];
+    $sql = "SELECT * FROM `zarinpal` WHERE `num_trans`='" . $num_trans . "' OR `num_ref`='" . $num_trans . "'";
+    $res = mysqli_query($GLOBALS['conn'], $sql);
+    $num = mysqli_num_rows($res);
+    if ($num > 0) {
+        $r = mysqli_fetch_assoc($res);
+        $info[$num_trans]['fee'] = $r['fee'];
+        $info[$num_trans]['tax'] = $r['tax'];
+        $info[$num_trans]['pos'] = $r['pos'];
+        $info[$num_trans]['email'] = $r['pos'];
+        $info[$num_trans]['card'] = $r['card'];
+        $info[$num_trans]['bank'] = $r['bank'];
+        $info[$num_trans]['descc'] = $r['descc'];
+    } else {
+        return $info[$num_trans];
+    }
+    return $info;
 }

@@ -49,13 +49,14 @@ include_once('func.php');
     }
     ?>
 </div>
-<?php get_prod($_GET['cat']); ?>
+<?php get_prod($_GET['cat']);  ?>
 <script>
     $("button[id*='del_order']").hide();
     $('.final_pay_btn').css('display', 'flex');
     $('#return_cat').css('display', 'inline');
 </script>
 <span id="scroll" style="display:none"></span>
+<span id="both" style="display:none"><?php echo $info['both']; ?></span>
 <?php
 $page_title = '<b style="color:#94f14f">C</b>ustomers <b style="color:#94f14f">B</b>usiness <b style="color:#94f14f">D</b>evelopment';
 $back = 1;
@@ -147,6 +148,7 @@ require_once('slider.php'); ?> <input type=" hidden" id="uid" value="<?php echo 
         var tester_ = String($("#t" + x).val());
         var temp_tedad = String($("#temp_tedad").val());
         var temp_offer = String($("#temp_offer").val());
+        var both = $("#both").text();
 
         if (tedad_ == 'NaN' || tedad_ == '' || typeof(tedad_) == NaN) {
             tedad_ = 0;
@@ -175,12 +177,20 @@ require_once('slider.php'); ?> <input type=" hidden" id="uid" value="<?php echo 
         }
 
         jaam = parseInt(o_o) + parseInt(t_t);
+        if (both == 1) {
+            jaam = 0;
+        }
         $.ajax({
             data: 'mojudi=ok&code=' + x + '&num=' + jaam,
             url: 'server.php',
             type: 'GET',
             success: function(result) {
-                if (y == 15 || y == 14 || y == 13 || result > 0) {
+                if (both == 1) {
+                    resulto = 99999;
+                } else {
+                    resulto = result;
+                }
+                if (y == 15 || y == 14 || y == 13 || resulto > 0 || both == 1 || result > 0) {
                     if ($("#o" + x).val() == "") {
                         $("#o" + x).val(0);
                         cal_price_with_offer(x, 0);
@@ -205,6 +215,7 @@ require_once('slider.php'); ?> <input type=" hidden" id="uid" value="<?php echo 
 
                     //testers_cmil = $("#cmil" + x + ":checked").val();
                     //testers_smil = $("#smil" + x + ":checked").val();
+
                     if (y == 6 || y == 5) {
                         $.ajax({
                             type: "GET",

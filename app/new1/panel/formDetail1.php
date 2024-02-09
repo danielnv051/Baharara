@@ -96,8 +96,20 @@ function users($uid)
     }
 }
 
+function banks($bank_sheba)
+{
+    db();
+    $sql = "SELECT * FROM bank WHERE `sheba`='" . $bank_sheba . "'";
+    $result = mysqli_query($GLOBALS['conn'], $sql);
+    if ($result) {
+        $r = mysqli_fetch_assoc($result);
+        return $r['bank'];
+    }
+}
+
 mission($_GET['id']);
 users($mission['u_id']);
+$bank = banks(substr($users[5], 2, 3));
 
 $seller_pic = 'https://perfumeara.com/webapp/app2/img/users/' . $mission['uid'] . '.jpg';
 $seller_sign = $users[3];
@@ -402,10 +414,10 @@ switch ($_GET['type']) {
     </div>
     <div class="factor_detail">
         <table style="width:100%">
-            <tr style="background: #E0E0E0;">
+            <tr>
                 <td class="shaba bold">شبا</td>
-                <td class="shaba" style="font-size: 1rem;font-weight: bold;">IR<?php echo substr($users[5], 0, 2) . "\t" . substr($users[5], 2, 4) . "\t" . substr($users[5], 6, 4) . "\t" . substr($users[5], 10, 4) . "\t" . substr($users[5], 14, 4) . "\t" . substr($users[5], 18, 4) . "\t" . substr($users[5], 22, 2) . "\t"; ?></td>
-                <td class="shaba"><img src="../img/<?php echo $users[6]; ?>.png" style="width:2rem" /></td>
+                <td class="shaba" style="padding: 0;font-size: 1rem;font-weight: bold;">IR<?php echo substr($users[5], 0, 2) . "\t" . substr($users[5], 2, 4) . "\t" . substr($users[5], 6, 4) . "\t" . substr($users[5], 10, 4) . "\t" . substr($users[5], 14, 4) . "\t" . substr($users[5], 18, 4) . "\t" . substr($users[5], 22, 2) . "\t"; ?></td>
+                <td class="shaba"><img src="../img/bank/<?php echo $bank; ?>.jpg" style="width:3rem" /></td>
             </tr>
         </table>
     </div>

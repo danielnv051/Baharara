@@ -21,8 +21,8 @@
 
 require_once '../func.php';
 require_once 'jdf.php';
-error_reporting(0);
 $data_user = [];
+$users = [];
 
 $num_1 = '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-1-circle-fill" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0ZM9.283 4.002H7.971L6.072 5.385v1.271l1.834-1.318h.065V12h1.312V4.002Z"/></svg>';
 $num_2 = '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-2-circle-fill" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0ZM6.646 6.24c0-.691.493-1.306 1.336-1.306.756 0 1.313.492 1.313 1.236 0 .697-.469 1.23-.902 1.705l-2.971 3.293V12h5.344v-1.107H7.268v-.077l1.974-2.22.096-.107c.688-.763 1.287-1.428 1.287-2.43 0-1.266-1.031-2.215-2.613-2.215-1.758 0-2.637 1.19-2.637 2.402v.065h1.271v-.07Z"/></svg>';
@@ -91,7 +91,7 @@ function masir($id)
 function mission($date)
 {
     db();
-    $sql = "SELECT * FROM mission WHERE `date` LIKE '%" . $date . "%' ORDER BY id ASC";
+    $sql = "SELECT * FROM mission WHERE `date` LIKE '%" . $date . "%' AND `type` = 1 ORDER BY id ASC";
     $result = mysqli_query($GLOBALS['conn'], $sql);
     if ($result) {
         $num = mysqli_num_rows($result);
@@ -117,13 +117,35 @@ function mission($date)
     }
 }
 
-function users($uid)
+/* function users($uid)
 {
     db();
     $sql = "SELECT * FROM customers WHERE `uid`=" . $uid;
     $result = mysqli_query($GLOBALS['conn'], $sql);
     $r = mysqli_fetch_assoc($result);
-    return $r['family'] . ',' . $r['mtel'] . ',' . $r['sign'] . ',' . $r['semat'] . ',' . $r['line'];
+    return $r['family'] . ',' . $r['mtel'] . ',' . $r['sign'] . ',' . $r['semat'] . ',' . $r['line'] . ',' . $r['sheba'];
+} */
+
+function users($uid)
+{
+    db();
+    $sql = "SELECT * FROM customers WHERE `uid`=" . $uid;
+    $result = mysqli_query($GLOBALS['conn'], $sql);
+    if ($result) {
+        $r = mysqli_fetch_assoc($result);
+        $GLOBALS['users'] = [$r['family'], $r['mtel'], $r['sign'], $r['semat'], $r['codem'], $r['sheba'], $r['line']];
+    }
+}
+
+function banks($bank_sheba)
+{
+    db();
+    $sql = "SELECT * FROM bank WHERE `sheba`='" . $bank_sheba . "'";
+    $result = mysqli_query($GLOBALS['conn'], $sql);
+    if ($result) {
+        $r = mysqli_fetch_assoc($result);
+        return $r['bank'];
+    }
 }
 
 ?>
@@ -337,9 +359,9 @@ function users($uid)
                                 <div class="zaman">
                                     <p class="mb-30"></p>
 
-                                    <table style="margin: 0 auto;">
+                                    <table style="margin: 0 auto;" class="mamoriat">
                                         <tr style="background: #4DB6AC; color: #353535;font-weight:bold">
-                                            <td colspan="10">فرم ماموریت</td>
+                                            <td colspan="11" onclick="toggle()">فرم ماموریت</td>
                                         </tr>
                                         <tr id="first_row">
                                             <td>ردیف</td>
@@ -348,110 +370,111 @@ function users($uid)
                                             <td>تاریخ</td>
                                             <td>شماره سند</td>
                                             <td>مبلغ(ریال)</td>
+                                            <td>بانک</td>
                                             <td>تایید سرپرست</td>
                                             <td>تایید مدیر</td>
                                             <td>تایید مدیریت</td>
                                             <td>تایید حسابداری</td>
                                         </tr>
-                                        <tr>
-                                            <?php
-                                            mission($_GET['date']);
-                                            $c_m = count($mission);
-                                            for ($i = 0; $i < $c_m; $i++) {
-                                                $sign = explode(',', $mission[$i]['sign']);
-                                                if (count($sign) - 1 > 0) {
-                                                    if ($sign[0] > 0) {
-                                                        $super_ = $ok;
-                                                        $super = 'super_ok';
-                                                    } else {
-                                                        $super_ = $no;
-                                                        $super = 'super_no';
-                                                    }
-
-                                                    if (isset($sign[1]) && $sign[1] > 0) {
-                                                        $manager_ = $ok;
-                                                        $manager = 'manager_ok';
-                                                    } else {
-                                                        $manager_ = $no;
-                                                        $manager = 'manager_no';
-                                                    }
-
-                                                    if (isset($sign[2]) && $sign[2] > 0) {
-                                                        $both_ = $ok;
-                                                        $both = 'both_ok';
-                                                    } else {
-                                                        $both_ = $no;
-                                                        $both = 'both_no';
-                                                    }
-
-                                                    if (isset($sign[3]) && $sign[3] > 0) {
-                                                        $acc_ = $ok;
-                                                        $acc = 'acc_ok';
-                                                    } else {
-                                                        $acc_ = $no;
-                                                        $acc = 'acc_no';
-                                                    }
+                                        <?php
+                                        mission($_GET['date']);
+                                        $c_m = count($mission);
+                                        for ($i = 0; $i < $c_m; $i++) {
+                                            $sign = explode(',', $mission[$i]['sign']);
+                                            if (count($sign) - 1 > 0) {
+                                                if ($sign[0] > 0) {
+                                                    $super_ = $ok;
+                                                    $super = 'super_ok';
                                                 } else {
-                                                    $super = 'super_no';
-                                                    $manager = 'manager_no';
-                                                    $both = 'both_no';
-                                                    $acc = 'both_no';
                                                     $super_ = $no;
-                                                    $manager_ = $no;
-                                                    $both_ = $no;
-                                                    $acc_ = $no;
+                                                    $super = 'super_no';
                                                 }
 
-
-                                                $rtr = explode(',', $mission[$i]['route']);
-                                                $rt = count($rtr) - 1;
-                                                for ($k = 0; $k < $rt; $k++) {
-                                                    if ($k == $rt - 1) {
-                                                        $city_list .= masir($rtr[$k]);
-                                                    } else {
-                                                        $city_list .= masir($rtr[$k]) . ' > ';
-                                                    }
-                                                }
-
-                                                $sum_this_mission = $mission[$i]['home'] + $mission[$i]['food'] + $mission[$i]['travel'];
-
-                                                $j = $i + 1;
-                                                $timestamp = strtotime($_GET['date']);
-                                                $jalali_date = jdate("Y/m/d", $timestamp);
-                                                $m_id = $mission[$i]['id'];
-
-                                                if ($mission[$i]['mission_name'] == '') {
-                                                    $mission_name = '-';
+                                                if (isset($sign[1]) && $sign[1] > 0) {
+                                                    $manager_ = $ok;
+                                                    $manager = 'manager_ok';
                                                 } else {
-                                                    $mission_name = $mission[$i]['mission_name'];
+                                                    $manager_ = $no;
+                                                    $manager = 'manager_no';
                                                 }
 
-                                                $user_datas = users($mission[$i]['uid']);
-                                                $ud = explode(',', $user_datas);
-                                                $user_line = $ud[5];
+                                                if (isset($sign[2]) && $sign[2] > 0) {
+                                                    $both_ = $ok;
+                                                    $both = 'both_ok';
+                                                } else {
+                                                    $both_ = $no;
+                                                    $both = 'both_no';
+                                                }
 
-                                                echo "
+                                                if (isset($sign[3]) && $sign[3] > 0) {
+                                                    $acc_ = $ok;
+                                                    $acc = 'acc_ok';
+                                                } else {
+                                                    $acc_ = $no;
+                                                    $acc = 'acc_no';
+                                                }
+                                            } else {
+                                                $super = 'super_no';
+                                                $manager = 'manager_no';
+                                                $both = 'both_no';
+                                                $acc = 'both_no';
+                                                $super_ = $no;
+                                                $manager_ = $no;
+                                                $both_ = $no;
+                                                $acc_ = $no;
+                                            }
+
+
+                                            $rtr = explode(',', $mission[$i]['route']);
+                                            $rt = count($rtr) - 1;
+                                            for ($k = 0; $k < $rt; $k++) {
+                                                if ($k == $rt - 1) {
+                                                    $city_list .= masir($rtr[$k]);
+                                                } else {
+                                                    $city_list .= masir($rtr[$k]) . ' > ';
+                                                }
+                                            }
+
+                                            $sum_this_mission = $mission[$i]['home'] + $mission[$i]['food'] + $mission[$i]['travel'];
+
+                                            $j = $i + 1;
+                                            $timestamp = strtotime($_GET['date']);
+                                            $jalali_date = jdate("Y/m/d", $timestamp);
+                                            $m_id = $mission[$i]['id'];
+
+                                            if ($mission[$i]['mission_name'] == '') {
+                                                $mission_name = '-';
+                                            } else {
+                                                $mission_name = $mission[$i]['mission_name'];
+                                            }
+
+                                            users($mission[$i]['uid']);
+                                            //$ud = explode(',', $user_datas);
+                                            $bank = banks(substr($users[5], 2, 3));
+                                            $user_line = $users[6];
+
+                                            echo "
                                             <tr class='mission l" . $user_line . " " . $super . " " . $manager . " " . $both . " " . $acc . "'>
                                                 <td>" . $j . "</td>
-                                                <td>" . $ud[0] . "</td>
+                                                <td>" . $users[0] . "</td>
                                                 <td>" . $mission_name . "</td>
                                                 <td>" . $jalali_date . "</td>
                                                 <td><a target='_blank' href='formDetail1.php?id=" . $m_id . "&type=mission'>" . $mission[$i]['id'] . "</a></td>
                                                 <td>" . sep3($sum_this_mission) . "</td>
+                                                <td><img src='../img/bank/" . $bank . ".jpg' style='width: 3rem;'/></td>
                                                 <td>" . $super_ . "</td>
                                                 <td>" . $manager_ . "</td>
                                                 <td>" . $both_ . "</td>
                                                 <td>" . $acc_ . "</td>
                                             </tr>
                                             <tr class='mission l" . $user_line . " " . $super . " " . $manager . " " . $acc . " " . $both . "'>
-                                                <td colspan='10' class='desc' style='background: #EEEEEE;'>مسیر: " . $city_list . " | رفت: " . $mission[$i]['s_fa'] . " - برگشت: " . $mission[$i]['e_fa'] . " | خودرو: " . $mission[$i]['vehicle_name'] . "</td>
+                                                <td colspan='11' class='desc' style='background: #EEEEEE;'>مسیر: " . $city_list . " | رفت: " . $mission[$i]['s_fa'] . " - برگشت: " . $mission[$i]['e_fa'] . " | خودرو: " . $mission[$i]['vehicle_name'] . "</td>
                                             </tr>
                                             ";
-                                                $city_list = '';
-                                                $sum_this_mission = 0;
-                                            }
-                                            ?>
-                                        </tr>
+                                            $city_list = '';
+                                            $sum_this_mission = 0;
+                                        }
+                                        ?>
                                     </table>
 
                                     <table style="text-align: center;display:none;float: right;border: 1px solid #000;margin-bottom:0.5rem;margin-top:0.5rem">
@@ -586,6 +609,10 @@ function users($uid)
             } else {
                 $('tr.mission').hide();
                 $('tr.l' + users_lines).show();
+            }
+
+            function toggle() {
+                $('tr.mission').slideToggle();
             }
         </script>
 

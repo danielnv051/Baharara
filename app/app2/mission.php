@@ -323,6 +323,10 @@ require_once('slider.php'); ?>
 </script>
 
 <style>
+    a.btn.btn-info.btn-return.v3.toggle_from {
+        border-radius: 0.3rem;
+    }
+
     #masir_field,
     #opr {
         margin-top: 0.6rem;

@@ -395,6 +395,8 @@ if ($c > 0) {
         $extra_les = $factor_ext[0][$f_id][$i]['extra_les'];
         $extra_add = $factor_ext[0][$f_id][$i]['extra_add'];
         $line_user = $factor_ext[0][$f_id][$i]['line'];
+        $acc_per = $factor_ext[0][$f_id][$i]['acc'];
+        $both_per = $factor_ext[0][$f_id][$i]['both'];
         $parent_id = $factor_ext[0][$f_id][$i]['parent_id'];
         $parent_name = $factor_ext[0][$f_id][$i]['parent_name'];
         $num_prod += $tedad;
@@ -630,6 +632,8 @@ if (isset($hesabdari_signs)) {
                     } else {
                         echo 'متفرقه';
                     }
+
+
                     ?>
                 </h3>
             </th>
@@ -649,10 +653,14 @@ if (isset($hesabdari_signs)) {
         </tr>
     </table>
     <table class="header " style="direction: rtl; padding: 0.5rem;width:100%;">
+        <?php if (isset($marja)) {
+            $email = '(a@a.ir)';
+        }; ?>
         <tr>
             <td style="width: 25%;">نام مشتری : </td>
             <th><span id="customer_name"><?php echo $factor_ext[0][$f_id][0]['shop_manager']; ?> (<?php echo $factor_ext[0][$f_id][0]['codem']; ?>)</span></th>
-            <?php if ($line_user == 5) {
+            <?php
+            if ($line_user == 5 || $acc_per == 1 || $both_per == 1) {
                 $crd = $factor_ext[0][$f_id][0]['card'];
 
                 $ref = $factor_ext[0][$f_id][0]['ref_id'];
@@ -664,6 +672,7 @@ if (isset($hesabdari_signs)) {
                 } else {
                     $marja = $ref1;
                 }
+                $zarinpal = zarinpal($marja);
 
                 echo '
                 <th style="text-align: right">
@@ -675,7 +684,12 @@ if (isset($hesabdari_signs)) {
         <tr>
             <td>نشانی : </td>
             <th><?php echo $factor_ext[0][$f_id][0]['addr']; ?></th>
-
+            <?php if (isset($marja)) {
+                echo '
+                    <th style="text-align: right;background:#000;color:#fff">
+                        واریزی زرین پال: ' . sep3($zarinpal[$marja]["fee"]) . ' ریال
+                    </th>';
+            }; ?>
         </tr>
         <!-- <tr>
             <td>آدرس سیستمی : </td>
@@ -684,10 +698,31 @@ if (isset($hesabdari_signs)) {
         <tr>
             <td>نام فروشگاه:</td>
             <th><?php echo $factor_ext[0][$f_id][0]['shop_name']; ?></th>
+            <?php if (isset($marja)) {
+                echo '
+                    <th style="text-align: right">
+                        کارمزد زرین پال: ' . sep3($zarinpal[$marja]["tax"]) . ' ریال
+                    </th>';
+            }; ?>
         </tr>
         <tr>
             <td>تلفن مشتری : </td>
             <th style="direction: ltr;"><?php echo $factor_ext[0][$f_id][0]['shop_tel']; ?></th>
+            <?php if (isset($marja)) {
+                echo '
+                    <th style="text-align: right">
+                        وضعیت: ' . $zarinpal[$marja]["pos"] . '
+                    </th>';
+            }; ?>
+        </tr>
+        <?php if (isset($marja)) {
+            echo '
+                <tr>
+                    <td>شماره کارت: </td>
+                    <th style="direction: ltr;">' . $zarinpal[$marja]["card"] . '</th>
+                    <th style="direction: ltr;">' . $zarinpal[$marja]["bank"] . '</th>
+                </tr>';
+        }; ?>
         </tr>
     </table>
     <table class="header factor_row" style="direction: rtl; padding: 0.5rem;<?php echo $www; ?>">

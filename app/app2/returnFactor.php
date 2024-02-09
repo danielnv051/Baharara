@@ -1,10 +1,14 @@
 <?php
 require_once('public_css.php');
 require_once('func.php');
-
 $x = get_my_return_factor($_COOKIE['uid']);
 $y = count($x);
 $z = '';
+$jaam = 0;
+$manategh = '';
+$z = '';
+$ja = 0;
+$shomare = '';
 
 for ($i = 0; $i < $y; $i++) {
     $tarikh = $x[$i]['tarikh'];
@@ -14,13 +18,38 @@ for ($i = 0; $i < $y; $i++) {
     $region = $x[$i]['region'];
     $desc = $x[$i]['desc'];
     $fee = $x[$i]['fee'];
+    $jaam += $fee;
+
+    if ($manategh == $region) {
+        $ja += $fee;
+        echo '<script>$("#l' . $shomare . '").text("' . sep3($ja) . '")</script>';
+    } else {
+        $ja = $fee;
+        $shomare = $i;
+        $z .= '
+        <table id="ttarget" style="user-select: none;">
+            <tr style="background:#000">
+                <td style="text-align:center">' . $region . ' 👇<br/><span id="l' . $i . '">' . sep3($ja) . '</span> ریال</td>
+            </tr>
+        </table>
+        ';
+        $manategh = $region;
+    }
+
+    $factor_type = $x[$i]['cat'];
+
+    if ($factor_type == 'رسمی') {
+        $f_bg = 'font-size: 1rem; padding: 0.2rem; background: #000; border-radius: 0.2rem;';
+    } else {
+        $f_bg = 'font-size: 1rem; padding: 0.2rem;border-radius: 0.2rem;';
+    }
 
     $j = $i + 1;
-    $z .= '        
-    <table id="ttarget" style="user-select: none;">
+    $z .= '
+    <table id="ttarget" style="user-select: none;"> 
     <tr>
-    <td rowspan="6" style="padding: 1rem;font-size: 2rem;border: 1px solid #fff;">
-    ' . $j . '
+    <td rowspan="6" style="width: 3rem;text-align: center;padding: 1rem;font-size: 2rem;border: 1px solid #fff;">
+    ' . $j . '<br/> <span class="factor_types" style="font-size:1rem;' . $f_bg . '">' . $factor_type . '</span>
     </td>
         <th colspan="2">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-check" viewBox="0 0 16 16">
@@ -81,9 +110,9 @@ for ($i = 0; $i < $y; $i++) {
             ' . sep3($fee) . ' ریال
         </th>
     </tr>
-</table>';
+</table>
+';
 }
-
 ?>
 <style>
     fieldset {
@@ -126,6 +155,7 @@ for ($i = 0; $i < $y; $i++) {
 <div class="items">
     <fieldset class='hor'>
         <legend>لیست 20 فاکتور مرجوعی اخیر</legend>
+        <h5>جمع کل: <span><?php echo sep3($jaam); ?> ریال</span></h5>
         <button class="btn btn-info" id="return" onclick="open_page('enter')">بازگشت</button>
         <?php echo $z; ?>
     </fieldset>

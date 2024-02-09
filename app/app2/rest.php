@@ -43,13 +43,13 @@ $masir = masir();
             <tr>
                 <td>
                     از(ساعت):
-                    <input type="time" class="form-control" id="rest_hour" />
+                    <input type="time" class="form-control" id="from_rest_hour" />
                 </td>
             </tr>
             <tr>
                 <td>
                     تا(ساعت):
-                    <input type="time" class="form-control" id="rest_hour" />
+                    <input type="time" class="form-control" id="to_rest_hour" />
                 </td>
             </tr>
 
@@ -86,46 +86,6 @@ require_once('slider.php'); ?>
 
 <script>
     //$('#headTitle').text('فرم ماموریت پرسنل');
-    document.getElementById('device').addEventListener("change", vehicle_set);
-
-    function vehicle_set() {
-        let device = $(this).val();
-        if (device == 3) {
-            $('.device_plak').hide();
-            $('#vehicle_name').val('-');
-            $('#pelak_2').val('-');
-            $('#pelak_3').val('-');
-            $('#pelak_alph').val('-');
-            $('#pelak_city').val('-');
-        } else {
-            $('.device_plak').show();
-            $('#vehicle_name').val('');
-            $('#pelak_2').val('');
-            $('#pelak_3').val('');
-            $('#pelak_alph').val('');
-            $('#pelak_city').val('');
-        }
-    }
-
-    function search() {
-        // Declare variables
-        var input, filter, ul, li, a, i, txtValue;
-        input = document.getElementById('search_box');
-        filter = input.value;
-        ul = document.getElementById("masir_");
-        li = ul.getElementsByTagName('option');
-
-        // Loop through all list items, and hide those who don't match the search query
-        for (i = 0; i < li.length; i++) {
-            a = li[i];
-            txtValue = a.textContent || a.innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                li[i].style.display = "";
-            } else {
-                li[i].style.display = "none";
-            }
-        }
-    }
 
     function date_diffrence() {
         d1 = parseInt($('#start_unix').text());
@@ -134,37 +94,6 @@ require_once('slider.php'); ?>
         var t2 = d2.getTime() / 1000
         var diff = Math.abs(d1 - d2);
         let final = diff / (60 * 60 * 24);
-    }
-
-    function addCity() {
-        let shahr = [];
-        let cont = $('#search_box').val();
-        if (cont == '' || cont == null) {
-            alert('نام شهر را وارد کنید');
-        } else {
-            $.ajax({
-                data: 'masir=' + cont,
-                url: 'server.php',
-                method: 'GET',
-                success: function(result) {
-                    if (result == 0) {
-                        alert('شهر مورد نظر پیدا نشد');
-                    } else {
-                        let masirha = '';
-                        const obj = JSON.parse(result);
-                        var iid = obj[0]['id'];
-                        masirha += "<div class='route_box " + iid + "'>" + obj[0]['city'] + "<button type='button' class='btn-close btn-close-white' aria-label='Close' onclick='closeCity(" + iid + ")'></button></div>";
-                        let mas = $('#route').html();
-                        $('#route').html(mas + masirha);
-                        let address = $('#route_array').html();
-                        $('#route_array').html(address + obj[0]['id'] + ',');
-                        shahr.push(cont);
-                        $('#search_box').val('');
-
-                    }
-                }
-            });
-        }
     }
 </script>
 
@@ -249,29 +178,25 @@ require_once('slider.php'); ?>
     });
 
     function save() {
-        let mission_name = $('#mission_name').val();
         let uid = $('#uids').val();
-        let route = $('#route_array').text();
         let start_unix = $('#start_unix').text();
         let start_fa = $('#start_from_fa').text();
         let end_unix = $('#end_unix').text();
         let end_fa = $('#end_to_fa').text();
-        let device = $('#device').val();
-        let vehicle = $('#vehicle_name').val();
-        let pelak_2 = $('#pelak_2').val();
-        let pelak_alph = $('#pelak_alph').val();
-        let pelak_3 = $('#pelak_3').val();
-        let pelak_city = $('#pelak_city').val();
-        if (route == '' || start_fa == '' || end_fa == '') {
+        let reason = $('#reason').val();
+        let to_rest_hour = $('#to_rest_hour').val();
+        let from_rest_hour = $('#from_rest_hour').val();
+
+        if (start_unix == '' || end_unix == '' || reason == '') {
             alert('لطفا تمامی فیلد ها را تکمیل کنید');
         } else {
             $.ajax({
-                data: 'mission=' + mission_name + '&uid=' + uid + '&route=' + route + '&s_unix=' + start_unix + '&s_fa=' + start_fa + '&e_unix=' + end_unix + '&e_fa=' + end_fa + '&device=' + device + '&vehicle=' + vehicle + '&p_2=' + pelak_2 + '&p_al=' + pelak_alph + '&p_3=' + pelak_3 + '&p_city=' + pelak_city,
+                data: 'rest=ok&uid=' + uid + '&s_unix=' + start_unix + '&s_fa=' + start_fa + '&e_unix=' + end_unix + '&e_fa=' + end_fa,
                 url: 'server.php',
                 type: 'GET',
                 success: function(result) {
                     if (result == 1) {
-                        alert('برگه ماموریت شما با موفقیت ثبت شد');
+                        alert('برگه مرخصی شما با موفقیت ثبت شد');
                         window.location.reload();
                     }
                 }
@@ -442,5 +367,9 @@ require_once('slider.php'); ?>
         float: right;
         padding: 0.5rem;
         margin-left: 0.2rem;
+    }
+
+    a.btn.btn-info.btn-return.v3.toggle_from {
+        border-radius: 0.3rem;
     }
 </style>

@@ -54,3 +54,10 @@ $back = 1;
         document.getElementById("scroll").innerHTML = scrol;
     }
 </script>
+
+<style>
+    .kasri_title {
+        padding: 0.5rem;
+        background: #FF9800;
+    }
+</style>
