@@ -18,6 +18,8 @@ $super_pos = '';
 $manager_pos = '';
 $both_pos = '';
 $acc_pos = '';
+$night = 0;
+$day = 0;
 
 function masir($id)
 {
@@ -39,6 +41,8 @@ function mission($id)
         $resultr = mysqli_query($GLOBALS['conn'], $sqli);
         $rr = mysqli_fetch_assoc($resultr);
         $line = $rr['line'];
+        $GLOBALS['night'] = $r['night'];
+        $GLOBALS['day'] = $r['day'];
 
         $ll = explode(',', $r['route']);
         $ln = count($ll);
@@ -80,7 +84,8 @@ function mission($id)
             'eskan' => $rr['home'],
             'khorak' => $rr['food'],
             'ayab' => $rr['travel'],
-            'line' => $line
+            'line' => $line,
+            'extra_add' => $r['extra_add'],
         ];
     }
 }
@@ -380,7 +385,19 @@ switch ($_GET['type']) {
             <div class="p4"><?php echo $mission['p4']; ?></div>
         </div>
     </div>
+    <?php
+    if ($night > 0) {
+        $n_time = $night;
+    } else {
+        $n_time = round(($mission['e_unix'] - $mission['s_unix'] - 1) / (3600000 * 24), 0);
+    }
 
+    if ($day > 0) {
+        $d_time = $day;
+    } else {
+        $d_time = round(($mission['e_unix'] - $mission['s_unix']) / (3600000 * 24), 0) + 1;
+    }
+    ?>
     <div class="factor_detail">
         <table style="width:100%">
             <td>عنوان</td>
@@ -390,13 +407,13 @@ switch ($_GET['type']) {
             </tr>
             <tr>
                 <td>هزینه اسکان</td>
-                <td><?php echo (round(($mission['e_unix'] - $mission['s_unix'] - 1) / (3600000 * 24), 0)); ?> شب</td>
+                <td><?php echo $n_time; ?> شب</td>
                 <td><?php echo sep3($mission['eskan']); ?></td>
                 <td><?php echo sep3($mission['home']); ?></td>
             </tr>
             <tr>
                 <td>هزینه خوراک</td>
-                <td><?php echo (round(($mission['e_unix'] - $mission['s_unix']) / (3600000 * 24), 0)) + 1; ?> روز</td>
+                <td><?php echo $d_time; ?> روز</td>
                 <td><?php echo sep3($mission['khorak']); ?></td>
                 <td><?php echo sep3($mission['food']); ?></td>
             </tr>
@@ -406,9 +423,15 @@ switch ($_GET['type']) {
                 <td><?php echo sep3($mission['ayab']); ?></td>
                 <td><?php echo sep3($mission['travel']); ?></td>
             </tr>
+            <tr>
+                <td>سایر</td>
+                <td>-</td>
+                <td>-</td>
+                <td><?php echo sep3($mission['extra_add']); ?> ریال</td>
+            </tr>
             <tr style="background: #141414; color: #fff;">
                 <td colspan="3">جمع کل(ریال)</td>
-                <td><?php echo sep3($mission['travel'] + $mission['food'] + $mission['home']); ?></td>
+                <td><?php echo sep3($mission['travel'] + $mission['food'] + $mission['home'] + $mission['extra_add']); ?></td>
             </tr>
         </table>
     </div>

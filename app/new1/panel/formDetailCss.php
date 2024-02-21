@@ -371,8 +371,7 @@
 
     .sign {
         width: 5rem;
-        height: 4rem;
-        /* display: none; */
+        height: 5rem;
     }
 
     /*     .emza td {

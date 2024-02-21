@@ -82,7 +82,7 @@ if (isset($_POST['type']) && $_POST['type'] == 'register') {
 
     $info = getInfo($_COOKIE['uid']);
     $z = add_factor($_COOKIE['uid'], $info['factor_id'], $_GET['cat'], $code, $tedad, $offer, $tester, $base_fee, $final_fee, $tester_type, $i_off);
-    //echo $z;
+    echo $z;
 } elseif (isset($_GET['basket'])) {
     $code = $_GET['code'];
     $info = getInfo($_COOKIE['uid']);
@@ -150,7 +150,7 @@ if (isset($_POST['type']) && $_POST['type'] == 'register') {
         $_GET['p_2'],
         $_GET['p_al'],
         $_GET['p_3'],
-        $_GET['p_city']
+        $_GET['p_city'],
     );
     echo $xx;
 } elseif (isset($_GET['delete_order'])) {
@@ -161,5 +161,17 @@ if (isset($_POST['type']) && $_POST['type'] == 'register') {
     $code = $_GET['code'];
     $num = $_GET['num'];
     $xx = mojudi("$code", "$num");
+    echo $xx;
+} elseif (isset($_GET['rest'])) {
+    $xx = new_rest(
+        $_GET['uid'],
+        $_GET['s_unix'],
+        $_GET['s_fa'],
+        $_GET['e_unix'],
+        $_GET['e_fa'],
+        $_GET['from_hour'],
+        $_GET['to_hour'],
+        $_GET['reason'],
+    );
     echo $xx;
 }

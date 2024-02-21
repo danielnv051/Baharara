@@ -88,16 +88,16 @@ function masir($id)
     return $r['city'];
 }
 
-function mission($date)
+function mission($date, $type)
 {
     db();
-    $sql = "SELECT * FROM mission WHERE `date` LIKE '%" . $date . "%' AND `type` = 1 ORDER BY id ASC";
+    $sql = "SELECT * FROM mission WHERE `date` LIKE '%" . $date . "%' AND `type` = '$type' ORDER BY id DESC";
     $result = mysqli_query($GLOBALS['conn'], $sql);
     if ($result) {
         $num = mysqli_num_rows($result);
         for ($i = 0; $i < $num; $i++) {
             $r = mysqli_fetch_assoc($result);
-            $GLOBALS['mission'][$i] = [
+            $GLOBALS['mission' . $type][$i] = [
                 'id' => $r['id'],
                 'uid' => $r['uid'],
                 'mission_name' => $r['mission_name'],
@@ -148,6 +148,22 @@ function banks($bank_sheba)
     }
 }
 
+function customer1($hashcode)
+{
+    db();
+    $sql = "SELECT * FROM `customers` WHERE permit = '$hashcode'";
+    $result = mysqli_query($GLOBALS['conn'], $sql);
+    $num = mysqli_num_rows($result);
+    if ($num > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $GLOBALS['data_users'] = $row;
+    } else {
+        $GLOBALS['data_users'] = null;
+    }
+}
+
+$g = $_GET['g'];
+customer1("$g");
 ?>
 
 <!doctype html>
@@ -325,367 +341,14 @@ function banks($bank_sheba)
 
 </head>
 
-<body class="login-area">
-    <input type="hidden" value="<?php echo $GLOBALS['line']; ?>" id="users_lines" />
-    <!-- Preloader -->
-    <!-- ======================================
-    ======================================= -->
-    <div class="main-content- h-100vh">
-        <div class="container-fluid h-100">
-            <!--             <div class="ba-logo" style="text-align: center;">
-                <img src="../img/logo-ba.png" title="logo" id="logo"
-                    style="max-width: 100px; height: auto; background: #01815f; border-radius: 50%; box-shadow: 0px 0px 6px #01815f4f; padding: 1rem;" />
-            </div> -->
-            <div class="row h-100 align-items-center justify-content-center">
-                <div class="col-md-12 col-lg-12" style="width: inherit;">
-                    <!-- Middle Box -->
-                    <div class="middle-box">
-                        <div class="card">
-                            <div class="card-body p-4">
-                                <h3 class="font-24 mb-1">لیست فرم های اداری پرسنل
-                                </h3>
-                                <h5>کاربر سامانه : <?php echo $head; ?> </h5>
-                                <div class="doc">
-                                    <table>
-                                        <tr>
-                                            <td><button id="all" class="btn btn-success">همه فرم ها</button></td>
-                                            <td><button id="super" class="btn btn-warning" onclick="show_super('<?php echo $GLOBALS['line']; ?>')">عدم تایید سرپرست</button></td>
-                                            <td><button id="manager" class="btn btn-primary">عدم تایید مدیر فروش</button></td>
-                                            <td><button id="both" class="btn btn-danger">عدم تایید مدیریت</button></td>
-                                            <td><button id="acc" class="btn btn-hesabdari" onclick="show_acc()">عدم تایید حسابداری</button></td>
-                                        </tr>
-                                    </table>
-                                </div>
-                                <div class="zaman">
-                                    <p class="mb-30"></p>
-
-                                    <table style="margin: 0 auto;" class="mamoriat">
-                                        <tr style="background: #4DB6AC; color: #353535;font-weight:bold">
-                                            <td colspan="11" onclick="toggle()">فرم ماموریت</td>
-                                        </tr>
-                                        <tr id="first_row">
-                                            <td>ردیف</td>
-                                            <td>بازاریاب</td>
-                                            <td>عنوان فرم</td>
-                                            <td>تاریخ</td>
-                                            <td>شماره سند</td>
-                                            <td>مبلغ(ریال)</td>
-                                            <td>بانک</td>
-                                            <td>تایید سرپرست</td>
-                                            <td>تایید مدیر</td>
-                                            <td>تایید مدیریت</td>
-                                            <td>تایید حسابداری</td>
-                                        </tr>
-                                        <?php
-                                        mission($_GET['date']);
-                                        $c_m = count($mission);
-                                        for ($i = 0; $i < $c_m; $i++) {
-                                            $sign = explode(',', $mission[$i]['sign']);
-                                            if (count($sign) - 1 > 0) {
-                                                if ($sign[0] > 0) {
-                                                    $super_ = $ok;
-                                                    $super = 'super_ok';
-                                                } else {
-                                                    $super_ = $no;
-                                                    $super = 'super_no';
-                                                }
-
-                                                if (isset($sign[1]) && $sign[1] > 0) {
-                                                    $manager_ = $ok;
-                                                    $manager = 'manager_ok';
-                                                } else {
-                                                    $manager_ = $no;
-                                                    $manager = 'manager_no';
-                                                }
-
-                                                if (isset($sign[2]) && $sign[2] > 0) {
-                                                    $both_ = $ok;
-                                                    $both = 'both_ok';
-                                                } else {
-                                                    $both_ = $no;
-                                                    $both = 'both_no';
-                                                }
-
-                                                if (isset($sign[3]) && $sign[3] > 0) {
-                                                    $acc_ = $ok;
-                                                    $acc = 'acc_ok';
-                                                } else {
-                                                    $acc_ = $no;
-                                                    $acc = 'acc_no';
-                                                }
-                                            } else {
-                                                $super = 'super_no';
-                                                $manager = 'manager_no';
-                                                $both = 'both_no';
-                                                $acc = 'both_no';
-                                                $super_ = $no;
-                                                $manager_ = $no;
-                                                $both_ = $no;
-                                                $acc_ = $no;
-                                            }
-
-
-                                            $rtr = explode(',', $mission[$i]['route']);
-                                            $rt = count($rtr) - 1;
-                                            for ($k = 0; $k < $rt; $k++) {
-                                                if ($k == $rt - 1) {
-                                                    $city_list .= masir($rtr[$k]);
-                                                } else {
-                                                    $city_list .= masir($rtr[$k]) . ' > ';
-                                                }
-                                            }
-
-                                            $sum_this_mission = $mission[$i]['home'] + $mission[$i]['food'] + $mission[$i]['travel'];
-
-                                            $j = $i + 1;
-                                            $timestamp = strtotime($_GET['date']);
-                                            $jalali_date = jdate("Y/m/d", $timestamp);
-                                            $m_id = $mission[$i]['id'];
-
-                                            if ($mission[$i]['mission_name'] == '') {
-                                                $mission_name = '-';
-                                            } else {
-                                                $mission_name = $mission[$i]['mission_name'];
-                                            }
-
-                                            users($mission[$i]['uid']);
-                                            //$ud = explode(',', $user_datas);
-                                            $bank = banks(substr($users[5], 2, 3));
-                                            $user_line = $users[6];
-
-                                            echo "
-                                            <tr class='mission l" . $user_line . " " . $super . " " . $manager . " " . $both . " " . $acc . "'>
-                                                <td>" . $j . "</td>
-                                                <td>" . $users[0] . "</td>
-                                                <td>" . $mission_name . "</td>
-                                                <td>" . $jalali_date . "</td>
-                                                <td><a target='_blank' href='formDetail1.php?id=" . $m_id . "&type=mission'>" . $mission[$i]['id'] . "</a></td>
-                                                <td>" . sep3($sum_this_mission) . "</td>
-                                                <td><img src='../img/bank/" . $bank . ".jpg' style='width: 3rem;'/></td>
-                                                <td>" . $super_ . "</td>
-                                                <td>" . $manager_ . "</td>
-                                                <td>" . $both_ . "</td>
-                                                <td>" . $acc_ . "</td>
-                                            </tr>
-                                            <tr class='mission l" . $user_line . " " . $super . " " . $manager . " " . $acc . " " . $both . "'>
-                                                <td colspan='11' class='desc' style='background: #EEEEEE;'>مسیر: " . $city_list . " | رفت: " . $mission[$i]['s_fa'] . " - برگشت: " . $mission[$i]['e_fa'] . " | خودرو: " . $mission[$i]['vehicle_name'] . "</td>
-                                            </tr>
-                                            ";
-                                            $city_list = '';
-                                            $sum_this_mission = 0;
-                                        }
-                                        ?>
-                                    </table>
-
-                                    <table style="text-align: center;display:none;float: right;border: 1px solid #000;margin-bottom:0.5rem;margin-top:0.5rem">
-
-                                    </table>
-
-                                </div>
-                                <div class=" row" style="width: max-content; margin: 0 auto;">
-                                    <form method="get" action="forms.php" class="print">
-                                        <label>تاریخ مورد نظر را وارد کنید: <input type="date" name="date" id="day" class="form-control"> </label>
-                                        <input type="hidden" name="g" value="<?php echo $_GET['g']; ?>" />
-                                        <button type="submit" class="btn btn-warning">نمایش</button>
-                                        <button>
-                                            <a href="javascript:if(window.print)window.print()" class="btn btn-primary">چاپ</a>
-                                        </button>
-                                    </form>
-                                </div>
-                                <input type="hidden" id="uid" value="<?php echo $_GET['uid']; ?> name=" uid" />
-                            </div>
-                        </div>
-                        <div class="text-center">
-                            <span class="">©</span>
-                            <label class="font-12">
-                                تمامی حقوق سایت، متعلق به شرکت بهار آرا خراسان می باشد.
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <input type="hidden" id="tarikh" value="<?php echo $_GET['date']; ?>">
-        <input type="hidden" id="g" value="<?php echo $_GET['g']; ?>">
-
-        <!-- ======================================
-    ======================================= -->
-        <!-- Must needed plugins to the run this Template -->
-
-
-        <script>
-            let g = $('#g').val();
-            let tarikh = $('#tarikh').val();
-            let masir = 'https://perfumeara.com/webapp/app_new/panel/forms.php?date=' + tarikh + '&g=' + g;
-            let pos = '';
-
-            $('#all').click(function() {
-                pos = '&t=all';
-                window.location.assign(masir + pos);
-            });
-
-            $('#manager').click(function() {
-                pos = '&t=manager';
-                $('tr.super_ok').show();
-                $('tr.super_no').hide();
-                $('tr.manager_ok').hide();
-                //window.location.assign(masir + pos);
-            });
-
-            $('#both').click(function() {
-                pos = '&t=both';
-                $('tr.manager_ok').show();
-                $('tr.manager_no').hide();
-                $('tr.both_ok').hide();
-                //window.location.assign(masir + pos);
-            });
-
-            $('#acc').click(function() {
-                pos = '&t=acc';
-                //window.location.assign(masir + pos);
-            });
-
-            function show_factor(x) {
-                $("tr[class*='l']").hide();
-
-                if (x == '*') {
-                    let line = '';
-                    $('tr').show();
-                } else {
-                    let line = x;
-                    $('tr.l' + x).show();
-                }
-                pos = '&t=factor';
-
-                $('tr.nofactor').hide();
-                $('tr.d1').hide();
-                //window.location.assign(masir + pos);
-            }
-
-            function show_acc() {
-                $('tr').show();
-                $("tr.acc_no").show();
-                $('tr.nofactor').hide();
-                $('tr.acc_ok').hide();
-                $('tr.both_no').hide();
-                $('tr.d1').hide();
-            }
-
-            function show_super(x) {
-                show_factor('<?php echo $GLOBALS['line']; ?>');
-                $('tr.nofactor').hide();
-                $('tr.super_ok').hide();
-                $('tr.d1').hide();
-            }
-        </script>
-
-        <input type="hidden" id="parent_" value="<?php echo $GLOBALS['line']; ?>" />
-        <script>
-            $(document).ready(function() {
-                let parent = $('#parent_').val();
-                if (parent == '*') {
-                    $('.data').show();
-                } else {
-                    $('.data').hide();
-                    $('.l' + parent).show();
-                }
-
-                $('tr.d1').hide();
-
-                let al_cbd = $('*').find('.data').length / 2;
-                let al_fac = $('*').find('.factor').length / 2;
-                let al_insta = $('*').find('.l5').length / 2;
-                let no_super = $('*').find('.super_no').length / 2;
-                let no_manager = $('*').find('.manager_no').length / 2;
-                let no_acc = $('*').find('.acc_no').length / 2;
-
-
-            });
-
-            var users_lines = $('#users_lines').val();
-            if (users_lines == '*') {
-                $('tr').show();
-            } else {
-                $('tr.mission').hide();
-                $('tr.l' + users_lines).show();
-            }
-
-            function toggle() {
-                $('tr.mission').slideToggle();
-            }
-        </script>
-
-        <style>
-            .desc {
-                text-align: right;
-                font-weight: bold;
-                color: #00695C;
-                font-size: 0.8rem;
-            }
-
-            .doc {
-                position: relative;
-            }
-
-            .doc table {
-                position: absolute;
-                top: -5rem;
-                right: -1.4rem;
-                border: none;
-            }
-
-            .doc table td:nth-child(1) {
-                width: 8.5rem;
-            }
-
-            .doc table td:nth-child(2) {
-                width: 10rem;
-            }
-
-            .doc table td:nth-child(3) {
-                width: 10.4rem;
-            }
-
-            .doc table td:nth-child(4) {
-                width: 11.3rem;
-            }
-
-            .doc table td:nth-child(5) {
-                width: 10.2rem;
-            }
-
-            .doc table td:nth-child(6) {
-                width: 10.8rem;
-            }
-
-            .doc td,
-            .doc tr,
-            .doc table {
-                border: none;
-            }
-
-            .doc button {
-                width: 140px;
-                height: 60px;
-            }
-        </style>
-
-        <?php
-        if ($_GET['g'] == 'b8e0f272c78fbcb1944a56f5e37158a2') {
-            echo '<script>
-            $(document).ready(function() {
-                $("*").find(".l100").hide();
-            });</script>';
-        }
-
-        ?>
-        <script src="../js/popper.min.js"></script>
-        <script src="../js/bootstrap.min.js"></script>
-        <script src="../js/bundle.js"></script>
-        <script src="../js/user_login.js"></script>
-        <!-- Active JS -->
-        <script src="./js/default-assets/active.js"></script>
-</body>
+<?php
+if ($data_users['pos'] == 0) {
+    include('forms_body.php');
+} else {
+    echo '
+        <h1 style="color:red">دسترسی شما به این سامانه مسدود شده است</h1>
+    ';
+}
+?>
 
 </html>

@@ -4,6 +4,8 @@ require_once 'jdf.php';
 error_reporting(0)
 
 ?>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link rel="stylesheet" href="../css/index.css" />
 <style>
     @font-face {
@@ -45,9 +47,10 @@ error_reporting(0)
     }
 
     .header img {
-        width: 5rem;
+        width: 11rem;
         vertical-align: middle;
         filter: grayscale(1);
+        height: 3rem;
     }
 
     th {
@@ -120,13 +123,13 @@ error_reporting(0)
 
     .signs {
         width: 15vw;
-        height: 15vh;
+        height: fit-content;
         margin: 0 auto;
         display: flex;
         flex-direction: column;
         flex-wrap: nowrap;
         align-items: center;
-        gap: 0.3rem;
+        gap: 0rem;
     }
 
     .free_sign {
@@ -479,6 +482,7 @@ if ($c > 0) {
     </tr>
     ';
     }
+    //    <img src="https://barcodeapi.org/api/auto/
 }
 $adress = 'https://perfumeara.com/webapp/app/panel/factor.php?f=' . $f_id . '&d=' . $_GET['d'];
 $qr = 'https://api.qrserver.com/v1/create-qr-code/?data=' . $adress . '&size=100x100';
@@ -584,12 +588,12 @@ if (isset($hesabdari_signs)) {
 <div class="factor_detail">
     <table class="header" style="width:100%;">
         <tr>
-            <th class="border_left" style="text-align: center;">
+            <th class="border_left" style="text-align: center;<?php echo $dd; ?>">
                 <div class="logos">
-                    <img src="../img/bgh.png" style="width: 4rem" />
+                    <img src="../img/bgh.png" style="width: 4rem;<?php echo $dd; ?>" />
                 </div>
             </th>
-            <th class="border_left" style="text-align: center;width:10rem;">
+            <th class="border_left" style="text-align: center;width:10rem;<?php echo $dd; ?>">
                 <div class="logos">
                     <?php
                     if ($line_user == 1) {
@@ -602,7 +606,7 @@ if (isset($hesabdari_signs)) {
                         $pics = 'ara.jpg';
                     }
                     ?>
-                    <img src="../img/<?php echo $pics; ?>" style="width: 3rem;filter: grayscale(1);opacity:0.6;" />
+                    <img src="../img/<?php echo $pics; ?>" style="width: 3rem;filter: grayscale(1);opacity:0.6;<?php echo $dd; ?>" />
                 </div>
             </th>
             <th class="border_left" style="border-left: 1px dashed silver;text-align: center;width:12rem">
@@ -655,7 +659,8 @@ if (isset($hesabdari_signs)) {
     <table class="header " style="direction: rtl; padding: 0.5rem;width:100%;">
         <?php if (isset($marja)) {
             $email = '(a@a.ir)';
-        }; ?>
+        };
+        ?>
         <tr>
             <td style="width: 25%;">نام مشتری : </td>
             <th><span id="customer_name"><?php echo $factor_ext[0][$f_id][0]['shop_manager']; ?> (<?php echo $factor_ext[0][$f_id][0]['codem']; ?>)</span></th>
@@ -896,6 +901,7 @@ if (isset($hesabdari_signs)) {
                     <div class="signs_btn accountant" style="display: none;">
                         <button class="btn accountant_ok" id="accountant_ok">تایید</button>
                     </div>
+                    <a class="btn btn-danger" id="accountant_del" onclick="delFactor('<?php echo $_GET['f']; ?>')">حذف فاکتور</a>
                 </div>
             </th>
 
@@ -987,6 +993,11 @@ if (isset($hesabdari_signs)) {
         $('.watermark').text('نـمـونـه بـازاریـابـی');
     }
 
+    var chang_item = customer_name.indexOf('نماینده');
+    if (chang_item >= 0) {
+        $('.watermark').text('نـمـایـنـده');
+    }
+
     function set_admin_sign(code, post_title) {
         $.ajax({
             type: "GET",
@@ -1073,8 +1084,6 @@ if (isset($hesabdari_signs)) {
             var supervisor_code = parseInt(prompt('کد تایید خود را وارد کنید'));
             if (!isNaN(supervisor_code)) {
                 f_id = $('#f_id').val();
-
-
                 $.ajax({
                     type: "GET",
                     data: {
@@ -1227,7 +1236,9 @@ for ($i = 0; $i < $conts; $i++) {
     }
 
     @media print {
-        .no_print {
+
+        .no_print,
+        #accountant_del {
             display: none;
         }
 
@@ -1257,6 +1268,12 @@ for ($i = 0; $i < $conts; $i++) {
         color: #fff;
         padding: 0.3rem;
         border-radius: 0.3rem;
+    }
+
+    @media screen and (max-width:425px) {
+        .english {
+            width: fit-content;
+        }
     }
 </style>
 

@@ -49,18 +49,25 @@ include_once('func.php');
     }
     ?>
 </div>
+
 <?php get_prod($_GET['cat']);  ?>
+
 <script>
     $("button[id*='del_order']").hide();
     $('.final_pay_btn').css('display', 'flex');
     $('#return_cat').css('display', 'inline');
 </script>
+
 <span id="scroll" style="display:none"></span>
 <span id="both" style="display:none"><?php echo $info['both']; ?></span>
+
 <?php
 $page_title = '<b style="color:#94f14f">C</b>ustomers <b style="color:#94f14f">B</b>usiness <b style="color:#94f14f">D</b>evelopment';
 $back = 1;
-require_once('slider.php'); ?> <input type=" hidden" id="uid" value="<?php echo $_COOKIE['uid']; ?>" />
+require_once('slider.php');
+?>
+
+<input type=" hidden" id="uid" value="<?php echo $_COOKIE['uid']; ?>" />
 <script src="./js/index.js"></script>
 <script>
     var prod_selected = $('#prod_selected').text().trim();
@@ -150,13 +157,19 @@ require_once('slider.php'); ?> <input type=" hidden" id="uid" value="<?php echo 
         var temp_offer = String($("#temp_offer").val());
         var both = $("#both").text();
 
-        if (tedad_ == 'NaN' || tedad_ == '' || typeof(tedad_) == NaN) {
+        if (tedad_ == '0' || tedad_ == 'NaN' || tedad_ == '' || typeof(tedad_) == NaN) {
             tedad_ = 0;
+        } else {
+            tedad_ = parseInt(tedad_);
         }
 
-        if (offer_ == 'NaN' || offer_ == '' || typeof(offer_) == NaN) {
+        if (offer_ == '0' || offer_ == 'NaN' || offer_ == '' || typeof(offer_) == NaN) {
             offer_ = 0;
+        } else {
+            offer_ = parseInt(offer_);
         }
+
+        let mojudi_show = parseInt($("#re" + x).text()) - tedad_ - offer_;
 
         var jaam = 0;
         var t_t = 0;
@@ -326,11 +339,16 @@ require_once('slider.php'); ?> <input type=" hidden" id="uid" value="<?php echo 
                             },
                         });
                     }
+                    $('#re' + x).text(String(mojudi_show));
                 } else {
                     alert('تعداد وارد شده بیشتر از موجودی انبار می باشد');
-                    $('#n' + x).val('');
-                    $('#o' + x).val('');
-                    $('#t' + x).val('');
+                    var aa = $("#re" + x).text();
+                    if (aa == 0) {
+                        $('#n' + x).val('');
+                        $('#o' + x).val('');
+                        $('#t' + x).val('');
+                    }
+
                     $('#n' + x).css('background-color', '#fff');
                     $('#o' + x).css('background-color', '#fff');
                     $('#t' + x).css('background-color', '#fff');
@@ -361,6 +379,7 @@ require_once('slider.php'); ?> <input type=" hidden" id="uid" value="<?php echo 
                     }, 2000);
                     if (result >= 0) {
                         $("#del_order" + x).css("display", "none");
+                        $("#re" + x).text(result);
                     }
 
                     var factor_tedad = $('#factor_tedad').html();
@@ -374,6 +393,7 @@ require_once('slider.php'); ?> <input type=" hidden" id="uid" value="<?php echo 
                     $('#factor_tedad').html(factor_tedad - nx);
                     $('#factor_offer').html(factor_offer - ox);
                     $('#factor_tester').html(factor_tester - tx);
+                    let mojudi_show = parseInt($("#re" + x).text()) + (parseInt(nx) + parseInt(ox));
 
                     $('#n' + x).val('');
                     $('#o' + x).val('');

@@ -15,7 +15,9 @@
         <button class="btn btn-danger" id="return" onclick="open_page('cbd')">بازگشت</button>
     </div>
     <span id="result_count">
-        تعداد نتایج: <span id="r_count">0</span>
+        تعداد نتایج: <span id="r_count">0</span><br />
+        (جمع مانده: <span id="jaam_region"></span> ریال)<br />
+        (جمع تسویه نشده : <span id="jaam_mande"></span> ریال)<br />
     </span>
 
     <div class="customer_info" style="display:none">
@@ -96,6 +98,10 @@
   <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z"/>
 </svg>' />
 
+<div id="no_result">
+    <h6>هیچ نتیجه ای پیدا نشد</h6>
+</div>
+
 <script>
     function select_shop(tt) {
         let x = $('#c' + tt).val();
@@ -137,6 +143,8 @@
         $('#shop_field').val('');
         $('.customer_list').html('');
         $('#r_count').text('0');
+        $('#jaam_mande').text('0');
+        $('#jaam_region').text('0');
     });
 
     $('#search').click(function() {
@@ -163,69 +171,84 @@
                 $('#r_count').text(tedad);
                 let sc = '';
                 let color_ = '';
-                for (i = 0; i < tedad; i++) {
-                    let rotbe = Math.round(obj[i]['score'] / 50000000, 0);
-                    let kasr = Math.round(obj[i]['real_bed'] / 50000000, 0);
-                    let final_score = (rotbe - kasr) / (rotbe + kasr);
+                let jam_region = 0;
+                if (obj[0]['num'] > 0) {
+                    $('#no_result').hide();
+                    for (i = 0; i < tedad; i++) {
+                        let rotbe = Math.round(obj[i]['score'] / 50000000, 0);
+                        let kasr = Math.round(obj[i]['real_bed'] / 50000000, 0);
+                        let final_score = (rotbe - kasr) / (rotbe + kasr);
+                        $('#jaam_region').text(obj[i]['region']);
+                        $('#jaam_mande').text(obj[i]['remain_cash1']);
 
-                    switch (true) {
-                        case parseInt(final_score) < 0:
-                            sc = star;
-                            color_ = '#FF5722'; //red
-                            break;
-                        case parseInt(final_score) == 0:
-                            sc = star__;
-                            color_ = '#ffd700'; //red
-                            break;
-                        case parseInt(final_score) == 1:
-                            sc = star_;
-                            color_ = '#ffd700'; //gold half
-                            break;
-                        case parseInt(final_score) == 2:
-                            sc = star;
-                            color_ = '#ffd700';
-                            break;
-                        case parseInt(final_score) == 3:
-                            sc = star + star_;
-                            color_ = '#ffd700';
-                            break;
-                        case parseInt(final_score) == 4:
-                            sc = star + star;
-                            color_ = '#ffd700';
-                            break;
-                        case parseInt(final_score) == 5:
-                            sc = star + star + star;
-                            color_ = '#ffd700';
-                            break;
-                        case parseInt(final_score) == 6:
-                            sc = star + star + star + star;
-                            color_ = '#ffd700';
-                            break;
-                        case parseInt(final_score) > 6:
-                            sc = star + star + star + star + star;
-                            color_ = '#ffd700';
-                            break;
-                        case final_score.toString() == NaN:
-                            sc = star + star + star;
-                            color_ = '#00BCD4';
-                            break;
-                        case final_score.toString() == 'undefined':
-                            sc = star__;
-                            color_ = '#FF5722';
-                            break;
+                        switch (true) {
+                            case parseInt(final_score) < 0:
+                                sc = star;
+                                color_ = '#FF5722'; //red
+                                break;
+                            case parseInt(final_score) == 0:
+                                sc = star__;
+                                color_ = '#ffd700'; //red
+                                break;
+                            case parseInt(final_score) == 1:
+                                sc = star_;
+                                color_ = '#ffd700'; //gold half
+                                break;
+                            case parseInt(final_score) == 2:
+                                sc = star;
+                                color_ = '#ffd700';
+                                break;
+                            case parseInt(final_score) == 3:
+                                sc = star + star_;
+                                color_ = '#ffd700';
+                                break;
+                            case parseInt(final_score) == 4:
+                                sc = star + star;
+                                color_ = '#ffd700';
+                                break;
+                            case parseInt(final_score) == 5:
+                                sc = star + star + star;
+                                color_ = '#ffd700';
+                                break;
+                            case parseInt(final_score) == 6:
+                                sc = star + star + star + star;
+                                color_ = '#ffd700';
+                                break;
+                            case parseInt(final_score) > 6:
+                                sc = star + star + star + star + star;
+                                color_ = '#ffd700';
+                                break;
+                            case final_score.toString() == NaN:
+                                sc = star + star + star;
+                                color_ = '#00BCD4';
+                                break;
+                            case final_score.toString() == 'undefined':
+                                sc = star__;
+                                color_ = '#FF5722';
+                                break;
+                        }
+
+                        if (obj[i]['moshtari_mande'] > 0) {
+                            bed_type = 'بدهکار: ';
+                        } else {
+                            bed_type = 'بستانکار: ';
+                        }
+
+                        j = i + 1;
+                        $('.customer_list').append('<tr><td>' + ' ' + j + '- ' + obj[i]['name'] + '</td></tr><tr><td>' + loc + ' ' + obj[i]['addr'] + '</td></tr>');
+                        $('.customer_list').append('<tr><td>' + store + ' ' + obj[i]['shop'] + ' </td></tr><tr><td style="font-size: 0.8rem;">' + tel + ' ' + obj[i]['tel'] + '</td></tr><tr><td>' + zaman + ' ' + obj[i]['tarikh'] + '</td></tr>');
+                        $('.customer_list').append('<tr><td>' + minus + ' تسویه نشده : ' + obj[i]['remain_cash'] + '</td></tr><tr><td class="bed">' + bed_type + obj[i]['bed'] + '</td></tr>');
+                        $('.customer_list').append('<input type="hidden" id="c' + i + '" value="' + obj[i]["code"] + '"/>')
+                        $('.customer_list').append('<input type="hidden" id="m' + i + '" value="' + obj[i]["name"] + '"/>')
+                        $('.customer_list').append('<input type="hidden" id="a' + i + '" value="' + obj[i]["addr"] + '"/>')
+                        $('.customer_list').append('<input type="hidden" id="t' + i + '" value="' + obj[i]["tel"] + '"/>')
+                        $('.customer_list').append('<input type="hidden" id="s' + i + '" value="' + obj[i]["shop"] + '"/>')
+                        $('.customer_list').append('<tr><td style="border-bottom: 1px solid silver;width:80vw"><button class="btn btn-info" onclick="select_shop(' + i + ')">انتخاب</button></td></tr>');
                     }
-
-                    j = i + 1;
-                    $('.customer_list').append('<tr><td>' + ' ' + j + '- ' + obj[i]['name'] + '</td></tr><tr><td>' + loc + ' ' + obj[i]['addr'] + '</td></tr>');
-                    $('.customer_list').append('<tr><td>' + store + ' ' + obj[i]['shop'] + ' </td></tr><tr><td style="font-size: 0.8rem;">' + tel + ' ' + obj[i]['tel'] + '</td></tr><tr><td>' + zaman + ' ' + obj[i]['tarikh'] + '</td></tr>');
-                    $('.customer_list').append('<tr><td class="bes">رتبه: <span class="grade" style="color:' + color_ + '">' + sc + ' </span></td></tr><tr><td class="bed">' + minus + ' ' + obj[i]['bed'] + '</td></tr>');
-                    $('.customer_list').append('<input type="hidden" id="c' + i + '" value="' + obj[i]["code"] + '"/>')
-                    $('.customer_list').append('<input type="hidden" id="m' + i + '" value="' + obj[i]["name"] + '"/>')
-                    $('.customer_list').append('<input type="hidden" id="a' + i + '" value="' + obj[i]["addr"] + '"/>')
-                    $('.customer_list').append('<input type="hidden" id="t' + i + '" value="' + obj[i]["tel"] + '"/>')
-                    $('.customer_list').append('<input type="hidden" id="s' + i + '" value="' + obj[i]["shop"] + '"/>')
-                    $('.customer_list').append('<tr><td style="border-bottom: 1px solid silver;width:80vw"><button class="btn btn-info" onclick="select_shop(' + i + ')">انتخاب</button></td></tr>');
+                } else {
+                    $('#no_result').show();
                 }
+
                 $("td:contains('" + search + "')").css('color', 'yellow');
             }
         });
@@ -304,6 +327,12 @@
 </script>
 
 <style>
+    #no_result {
+        display: none;
+        color: #fff;
+        text-align: center;
+    }
+
     svg:hover {
         color: gold;
     }
@@ -327,7 +356,7 @@
         padding: 0.5rem;
         background: #424242;
         width: 100%;
-        text-align: center;
+        text-align: right;
     }
 
     .button_pod {

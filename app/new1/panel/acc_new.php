@@ -50,6 +50,9 @@ $line = '';
 $base = [];
 $loc = [];
 
+$factor_rasmi = 0;
+$factor_norasmi = 0;
+
 $manategh = [];
 $c = 0;
 $day_name = ['sun' => 'یکشنبه', 'mon' => 'دوشنبه', 'tue' => 'سه شنبه', 'wed' => 'چهارشنبه', 'thu' => 'پنجشنبه', 'fri' => 'جمعه', 'sat' => 'شنبه'];
@@ -255,36 +258,36 @@ function order_info($zaman)
     $x = $GLOBALS['admin'];
     if (strlen($zaman) > 3) {
         if ($x == '99') {
-            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' ORDER BY `id` desc";
+            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `del_pos`=0 ORDER BY `id` desc";
         } elseif ($GLOBALS['line'] == 5) {
-            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` = 300 ORDER BY `id` desc";
+            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` = 300 AND `del_pos`!=1 ORDER BY `id` desc";
         } elseif ($GLOBALS['line'] == '**') {
             $sss = "SELECT * FROM customers WHERE permit = '" . $permit . "'";
             $rrr = mysqli_query($GLOBALS['conn'], $sss);
             if ($rrr) {
                 $www = mysqli_fetch_assoc($rrr);
                 $u_id = $www['uid'];
-                $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` ='" . $u_id . "'  ORDER BY `id` desc";
+                $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` ='" . $u_id . "'  AND `del_pos`!=1 ORDER BY `id` desc";
             }
         } else {
-            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` != '100' AND `uid` != '200' AND `uid` != '300' AND `uid`!=22 ORDER BY `id` desc";
+            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` != '100' AND `uid` != '200' AND `uid` != '300' AND `uid`!=22 AND `del_pos`!=1 ORDER BY `id` desc";
         }
     } else {
         $zamani = '2401210000000000000000';
         if ($x == '99') {
             $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " ORDER BY `id` desc";
         } elseif ($GLOBALS['line'] == 5) {
-            $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` = 300 ORDER BY `id` desc";
+            $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` = 300 AND `del_pos`!=1 ORDER BY `id` desc";
         } elseif ($GLOBALS['line'] == '**') {
             $sss = "SELECT * FROM customers WHERE permit = '" . $permit . "'";
             $rrr = mysqli_query($GLOBALS['conn'], $sss);
             if ($rrr) {
                 $www = mysqli_fetch_assoc($rrr);
                 $u_id = $www['uid'];
-                $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` ='" . $u_id . "'  ORDER BY `id` desc";
+                $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` ='" . $u_id . "'  AND `del_pos`!=1 ORDER BY `id` desc";
             }
         } else {
-            $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` != '100' AND `uid` != '200' AND `uid` != '300' ORDER BY `id` desc";
+            $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` != '100' AND `uid` != '200' AND `uid` != '300' AND `del_pos`!=1 ORDER BY `id` desc";
         }
     }
 
@@ -297,6 +300,7 @@ function order_info($zaman)
         $factor_id = $row['id'];
         $accept = $row['accept'];
         $del_pos = $row['del_pos'];
+        $shop_id = $row['shop_id'];
 
         $group = seller_team($uid);
         $t = explode('.', $group);
@@ -333,6 +337,9 @@ function order_info($zaman)
         $hood = $rows['hood'];
         $family = $rows['family'];
 
+        $fb = find_base1($shop_id);
+        $shop_addr = $fb['addr'];
+
         $GLOBALS['data_log'][$i] = [
             'id' => $row['id'],
             'shop_id' => $row['shop_id'],
@@ -341,6 +348,7 @@ function order_info($zaman)
             'login' => $row['login'],
             'logout' => $row['logout'],
             'result' => $row['result'],
+            'accept_time' => $row['accept_time'],
             'sign' => $row['sign'],
             'hood' => $hood,
             'family' => $family,
@@ -350,6 +358,7 @@ function order_info($zaman)
             'line' => $rows['line'],
             'del_pos' => $del_pos,
             'type' => $row['factor_type'],
+            'shop_addr' => $shop_addr,
         ];
         //}
     }
@@ -363,9 +372,23 @@ function customer($uid)
     $num = mysqli_num_rows($result);
     if ($num > 0) {
         $row = mysqli_fetch_assoc($result);
-        $GLOBALS['data_user'] = ['family' => $row['family'], 'mtel' => $row['mtel']];
+        $GLOBALS['data_user'] = ['family' => $row['family'], 'mtel' => $row['mtel'], 'pos' => $row['pos']];
     } else {
         $GLOBALS['data_user'] = null;
+    }
+}
+
+function customer1($hashcode)
+{
+    db();
+    $sql = "SELECT * FROM `customers` WHERE permit = '$hashcode'";
+    $result = mysqli_query($GLOBALS['conn'], $sql);
+    $num = mysqli_num_rows($result);
+    if ($num > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $GLOBALS['data_users'] = $row;
+    } else {
+        $GLOBALS['data_users'] = null;
     }
 }
 
@@ -410,6 +433,9 @@ function order_info_($operator, $order_type, $zaman)
         $factor_id = $row['id'];
         $ff_id = $row['factor_id'];
         $accept = $row['accept'];
+        $del_pos = $row['del_pos'];
+        $factor_type = $row['factor_type'];
+        $shop_id = $row['shop_id'];
 
         $sqlv = "SELECT * FROM `customers` WHERE `uid`= " . $uid;
         $resultv = mysqli_query($GLOBALS['conn'], $sqlv);
@@ -453,6 +479,8 @@ function order_info_($operator, $order_type, $zaman)
                     $rows = mysqli_fetch_assoc($resulti);
                     $hood = $rows['hood'];
                     $family = $rows['family'];
+                    $fb = find_base1($shop_id);
+                    $shop_addr = $fb['addr'];
 
                     $GLOBALS['data_log'][$i] = [
                         'id' => $row['id'],
@@ -462,13 +490,17 @@ function order_info_($operator, $order_type, $zaman)
                         'login' => $row['login'],
                         'logout' => $row['logout'],
                         'result' => $row['result'],
+                        'accept_time' => $row['accept_time'],
                         'sign' => $row['sign'],
                         'hood' => $hood,
                         'family' => $family,
                         'accept' => $accept,
                         'f_id' => $factor_id,
                         'uid' => $uid,
-                        'line' => $rows['line']
+                        'line' => $rows['line'],
+                        'del' => $del_pos,
+                        'type' => $factor_type,
+                        'shop_addr' => "$shop_addr"
                     ];
                 }
             }
@@ -508,6 +540,9 @@ function order_info_($operator, $order_type, $zaman)
                 $hood = $rows['hood'];
                 $family = $rows['family'];
 
+                $fb = find_base1($row['shop_id']);
+                $shop_addr = $fb['addr'];
+
                 $GLOBALS['data_log'][$i] = [
                     'id' => $row['id'],
                     'shop_id' => $row['shop_id'],
@@ -516,17 +551,20 @@ function order_info_($operator, $order_type, $zaman)
                     'login' => $row['login'],
                     'logout' => $row['logout'],
                     'result' => $row['result'],
+                    'accept_time' => $row['accept_time'],
                     'sign' => $row['sign'],
                     'hood' => $hood,
                     'family' => $family,
                     'accept' => $accept,
                     'f_id' => $factor_id,
                     'uid' => $uid,
-                    'line' => $rows['line']
+                    'line' => $rows['line'],
+                    'del' => $del_pos,
+                    'type' => $factor_type,
+                    'shop_addr' => "$shop_addr"
                 ];
             }
         }
-        //}
     }
 }
 
@@ -564,6 +602,15 @@ function find_base($x)
     $rabcq = mysqli_query($GLOBALS['conn'], $abcq);
     $rq = mysqli_fetch_assoc($rabcq);
     $GLOBALS['base'] = $rq;
+}
+
+function find_base1($x)
+{
+    db();
+    $abcq = "SELECT * FROM `base` WHERE `id` ='$x'";
+    $rabcq = mysqli_query($GLOBALS['conn'], $abcq);
+    $rq = mysqli_fetch_assoc($rabcq);
+    return $rq;
 }
 
 function find_loc($x)
@@ -716,6 +763,9 @@ function payment_type_sep($payment_type = null, $pos = false)
         }
     }
 }
+$g = $_GET['g'];
+customer1("$g");
+
 ?>
 
 <!doctype html>
@@ -892,469 +942,14 @@ function payment_type_sep($payment_type = null, $pos = false)
 
 </head>
 
-<body class="login-area">
-
-    <!-- Preloader -->
-    <!-- ======================================
-    ======================================= -->
-    <div class="main-content- h-100vh">
-        <div class="container-fluid h-100">
-            <!--             <div class="ba-logo" style="text-align: center;">
-                <img src="../img/logo-ba.png" title="logo" id="logo"
-                    style="max-width: 100px; height: auto; background: #01815f; border-radius: 50%; box-shadow: 0px 0px 6px #01815f4f; padding: 1rem;" />
-            </div> -->
-            <div class="row h-100 align-items-center justify-content-center">
-                <div class="col-md-12 col-lg-12" style="width: inherit;">
-                    <!-- Middle Box -->
-                    <div class="middle-box">
-                        <div class="card">
-                            <div class="card-body p-4">
-                                <h3 class="font-24 mb-1">لیست فاکتور های بازاریاب ها
-                                </h3>
-                                <h5>کاربر سامانه : <?php echo $head; ?> - <?php echo $day_name[$m] ?> - <?php echo $jalali_date; ?></h5>
-                                <div class="doc">
-                                    <table>
-                                        <tr>
-                                            <td><button id="all" class="btn btn-success">همه CBD</button></td>
-                                            <td><button id="factor" class="btn btn-primary" onclick="show_factor('<?php echo $GLOBALS['line']; ?>')">همه فاکتور ها</button></td>
-                                            <td><button id="super" class="btn btn-warning" onclick="show_super('<?php echo $GLOBALS['line']; ?>')">عدم تایید سرپرست</button></td>
-
-                                            <?php
-                                            if ($GLOBALS['admin'] == '99' && $GLOBALS['line'] == '*') {
-                                                echo '
-                                        <td><button id="instagram" class="btn btn-success">فاکتور اینستاگرام</button></td>
-                                        <td><button id="labelzan" class="btn btn-success">لیبل سفارشات</button></td>
-                                        ';
-                                            }
-                                            ?>
-
-                                            <?php
-                                            if ($GLOBALS['admin'] == '99' || $GLOBALS['line'] == '*' || $GLOBALS['line'] == '**') {
-                                                echo '
-                                        <td><button id="manager" class="btn btn-danger">عدم تایید مدیر</button></td>
-                                        <td><button id="acc" class="btn btn-hesabdari" onclick="show_acc()">عدم تایید حسابداری</button></td>
-                                        ';
-                                            }
-                                            ?>
-                                        </tr>
-                                    </table>
-                                </div>
-                                <div class="zaman">
-                                    <p class="mb-30"></p>
-                                    <table style="margin: 0 auto;">
-                                        <tr id="first_row">
-                                            <td>ردیف</td>
-                                            <td>بازاریاب</td>
-                                            <td>نام <br /> فروشگاه</td>
-                                            <td>نام <br /> مشتری</td>
-                                            <td>نوع<br />فاکتور</td>
-                                            <td>نوع <br /> مشتری</td>
-                                            <td>تاریخ</td>
-                                            <td>وضعیت</td>
-                                            <td>فاکتور</td>
-                                            <td>تایید <br /> سرپرست</td>
-                                            <td>تایید <br /> مدیر فروش</td>
-                                            <td>تایید <br /> حسابداری</td>
-                                        </tr>
-                                        <tr>
-                                            <?php
-                                            $GL = $_GET['g'];
-                                            $count = count($data_log);
-                                            for ($i = 0; $i < $count; $i++) {
-                                                $both1 = 'super_no';
-                                                $both2 = 'manager_no';
-                                                $both3 = 'acc_no';
-                                                switch ($data_log[$i]['buy_pos']) {
-                                                    case '-':
-                                                        $pos = '<svg id="neg_svg" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-dash-circle-fill" viewBox="0 0 16 16">
-                                                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"/>
-                                                      </svg>';
-                                                        break;
-                                                    case '+':
-                                                        $pos = '<svg id="plus_svg" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
-                                                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
-                                                      </svg>';
-                                                        break;
-                                                }
-                                                $r = $i + 1;
-                                                find_base($data_log[$i]['shop_id']);
-                                                $fl = find_loc($base['loc_id']);
-                                                $_login = explode(' ', $data_log[$i]['login']);
-                                                $_logout = explode(' ', $data_log[$i]['logout']);
-                                                $zz = explode('*', $data_log[$i]['result']);
-                                                $dd = stripos($data_log[$i]['hood'], $fl['hood']);
-
-                                                /* cal second<60 */
-                                                if ($present < 60) {
-                                                    if ($present < 10) {
-                                                        $p = '0' . $present;
-                                                    } else {
-                                                        $p = $present;
-                                                    }
-                                                    $modat = '00:' . $p;
-
-                                                    /* cal second == 60 */
-                                                } elseif ($present == 60) {
-                                                    $modat = '01:00';
-
-                                                    /* cal second >60 */
-                                                } elseif ($present > 60) {
-                                                    $minit = intval($present / 60);
-                                                    if ($minit < 10) {
-                                                        $mm = '0' . $minit;
-                                                    } else {
-                                                        $mm = $minit;
-                                                    }
-
-                                                    if ($present - ($minit * 60) < 10) {
-                                                        $ps = '0' . $present - ($minit * 60);
-                                                    } else {
-                                                        $ps = $present - ($minit * 60);
-                                                    }
-                                                    $modat = $mm . ':' . $ps;
-                                                }
-
-                                                $ct = customer_type($fl['id']);
-                                                if ($ct == 'new') {
-                                                    $ctx = 'جدید';
-                                                    $new_customer_count += 1;
-                                                    $ctt = '#e2ffe4';
-                                                } else {
-                                                    $ctx = 'قدیم';
-                                                    $old_customer_count += 1;
-                                                    $ctt = '#fff';
-                                                }
-
-                                                if (is_bool($dd)) {
-                                                    $hd = '❌';
-                                                } else {
-                                                    $hd = '✅';
-                                                }
-
-                                                $addr = $fl['addr'];
-                                                $hood = $fl['hood'];
-                                                $f_id = $data_log[$i]['factor_id'];
-                                                $factor_id = $data_log[$i]['f_id'];
-                                                $tarikh = $_GET['date'];
-                                                $check_is_factor = factor_num($f_id);
-                                                if ($check_is_factor > 0 && $data_log[$i]['buy_pos'] == '+') {
-                                                    $fctr = "factor";
-                                                    $factor_link = "<a target='_blank' href='factor.php?f=" . $f_id . "&d=" . $_login[0] . "&g=" . $GL . "'>" . $factor_id . "</a>";
-                                                } else {
-                                                    $fctr = "nofactor";
-                                                    $factor_link = "" . $factor_id;
-                                                }
-
-                                                $family = $data_log[$i]['family'];
-                                                if ($data_log[$i]['accept'] == '') {
-                                                    $both_1 = '<svg id="neg_svg" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-dash-circle-fill" viewBox="0 0 16 16"> <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"></path> </svg>';
-                                                    $both_2 = '<svg id="neg_svg" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-dash-circle-fill" viewBox="0 0 16 16"> <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"></path> </svg>';
-                                                    $both_3 = '<svg id="neg_svg" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-dash-circle-fill" viewBox="0 0 16 16"> <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"></path> </svg>';
-                                                } else {
-                                                    $acpt = explode(',', $data_log[$i]['accept']);
-                                                    if (intval($acpt[0]) > 0) {
-                                                        $both_1 = '<svg id="plus_svg" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16"> <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/> </svg>';
-                                                        $both1 = 'super_ok';
-                                                    } else {
-                                                        $both_1 = '<svg id="neg_svg" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-dash-circle-fill" viewBox="0 0 16 16"> <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"></path> </svg>';
-                                                        $both1 = 'super_no';
-                                                    }
-
-                                                    if (intval($acpt[1]) > 0) {
-                                                        $both_2 = '<svg id="plus_svg" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16"> <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/> </svg>';
-                                                        $both2 = 'manager_ok';
-                                                    } else {
-                                                        $both_2 = '<svg id="neg_svg" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-dash-circle-fill" viewBox="0 0 16 16"> <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"></path> </svg>';
-                                                        $both2 = 'manager_no';
-                                                    }
-
-                                                    if (intval($acpt[2]) > 0) {
-                                                        $both_3 = '<svg id="plus_svg" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16"> <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/> </svg>';
-                                                        $both3 = 'acc_ok';
-                                                    } else {
-                                                        $both_3 = '<svg id="neg_svg" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-dash-circle-fill" viewBox="0 0 16 16"> <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"></path> </svg>';
-                                                        $both3 = 'acc_no';
-                                                    }
-                                                }
-
-                                                if ($factor_link == '-') {
-                                                    $both_1 = '';
-                                                    $both_2 = '';
-                                                    $both_3 = '';
-                                                    $both = 'noaccept';
-                                                }
-
-                                                $tt = strtotime(explode(' ', $data_log[$i]['login'])[0]);
-                                                $vorood = jdate("Y/m/d", $tt);
-
-                                                $lines =  $data_log[$i]['line'];
-                                                $del_pos =  $data_log[$i]['del_pos'];
-
-                                                if ($data_log[$i]['type'] == '') {
-                                                    $f_t = 'متفرقه';
-                                                    $bg = 'transparent';
-                                                    $cl = '#58595a';
-                                                } elseif ($data_log[$i]['type'] == 'رسمی') {
-                                                    $bg = '#000';
-                                                    $cl = '#FFEB3B';
-                                                    $f_t = $data_log[$i]['type'];
-                                                } elseif ($data_log[$i]['type'] == 'متفرقه') {
-                                                    $f_t = $data_log[$i]['type'];
-                                                    $bg = 'transparent';
-                                                    $cl = '#58595a';
-                                                }
-
-                                                echo "
-                                            <tr style='background:" . $ctt . "' class='l" . $lines . " data " . $fctr . " " . $both1 . " " . $both2 . " " . $both3 . " d" . $del_pos . "'>
-                                                <td>" . $r . "</td>
-                                                <td class='family'>" . $family . "</td>
-                                                <td>" . $base['shop_name'] . "</td>
-                                                <td>" . $base['shop_manager'] . "</td>
-                                                <td style='color:" . $cl . ";background:" . $bg . "'>" . $f_t . "</td>
-                                                <td>" . $ctx . "</td>
-                                                <td>" . $vorood . "</td>
-                                                <td>" . $pos . "</td>
-                                                <td>" . $factor_link . "</td>
-                                                <td>" . $both_1 . "</td>
-                                                <td>" . $both_2 . "</td>
-                                                <td>" . $both_3 . "</td>
-                                            </tr>
-                                            <tr class='l" . $lines . " data " . $fctr . " " . $both1 . " " . $both2 . " " . $both3 . " d" . $del_pos . "'>
-                                            
-                                                <td colspan='16' style='text-align: right; padding-right: 0.5rem;background-color:#f1f1f1'>" . $zz[0] . "</td>
-                                            </tr>
-                                            ";
-                                            }
-                                            ?>
-                                        </tr>
-                                    </table>
-
-                                    <table style="display:none; text-align: center;display:inline;float: right;border: 1px solid #000;margin-bottom:0.5rem;margin-top:0.5rem">
-                                        <tr>
-                                            <th colspan="5">اطلاعات ویزیت</th>
-                                        </tr>
-                                        <tr>
-                                            <td>تعداد کل ویزیت</td>
-                                            <td>ویزیت موفق</td>
-                                            <td>ویزیت ناموفق</td>
-                                            <td>مشتری قدیم</td>
-                                            <td>مشتری جدید</td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <?php echo ($visit_plus + $visit_neg); ?>
-                                            </td>
-                                            <td>
-                                                <?php echo $visit_plus; ?>
-                                            </td>
-                                            <td>
-                                                <?php echo $visit_neg; ?>
-                                            </td>
-                                            <td>
-                                                <?php echo $old_customer_count; ?>
-                                            </td>
-                                            <td>
-                                                <?php echo $new_customer_count; ?>
-                                            </td>
-                                        </tr>
-                                    </table>
-
-                                    <table style="text-align: center;display:none;float: right;border: 1px solid #000;margin-bottom:0.5rem;margin-top:0.5rem">
-                                        <?php manategh_($manategh); ?>
-                                    </table>
-
-                                </div>
-                                <div class=" row" style="width: max-content; margin: 0 auto;">
-                                    <form method="get" action="acc_new.php" class="print">
-                                        <label>تاریخ مورد نظر را وارد کنید: <input type="date" name="date" id="day" class="form-control"> </label>
-                                        <input type="hidden" name="g" value="<?php echo $_GET['g']; ?>" />
-                                        <button type="submit" class="btn btn-warning">نمایش</button>
-                                        <button>
-                                            <a href="javascript:if(window.print)window.print()" class="btn btn-primary">چاپ</a>
-                                        </button>
-                                    </form>
-                                </div>
-                                <input type="hidden" id="uid" value="<?php echo $_GET['uid']; ?> name=" uid" />
-                            </div>
-                        </div>
-                        <div class="text-center">
-                            <span class="">©</span>
-                            <label class="font-12">
-                                تمامی حقوق سایت، متعلق به شرکت بهار آرا خراسان می باشد.
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <input type="hidden" id="tarikh" value="<?php echo $_GET['date']; ?>">
-        <input type="hidden" id="g" value="<?php echo $_GET['g']; ?>">
-
-        <!-- ======================================
-    ======================================= -->
-        <!-- Must needed plugins to the run this Template -->
-
-
-        <script>
-            let g = $('#g').val();
-            let tarikh = $('#tarikh').val();
-            let masir = 'https://perfumeara.com/webapp/app_new/panel/acc_new.php?date=' + tarikh + '&g=' + g;
-            let pos = '';
-
-            $('#all').click(function() {
-                pos = '&t=all';
-                window.location.assign(masir + pos);
-            });
-
-            $('#manager').click(function() {
-                pos = '&t=manager';
-                $('tr.super_ok').show();
-                $('tr.super_no').hide();
-                $('tr.manager_ok').hide();
-                //window.location.assign(masir + pos);
-            });
-
-            $('#acc').click(function() {
-                pos = '&t=acc';
-                //window.location.assign(masir + pos);
-            });
-
-            $('#instagram').click(function() {
-                show_factor(5);
-            });
-
-            function show_factor(x) {
-                $("tr[class*='l']").hide();
-
-                if (x == '*' || x == '**') {
-                    let line = '';
-                    $('tr').show();
-                } else {
-                    let line = x;
-                    $('tr.l' + x).show();
-                }
-                pos = '&t=factor';
-
-                $('tr.nofactor').hide();
-                $('tr.d1').hide();
-            }
-
-            function show_acc() {
-                $('tr').show();
-                $("tr.acc_no").show();
-                $('tr.nofactor').hide();
-                $('tr.acc_ok').hide();
-                $('tr.manager_no').hide();
-                $('tr.d1').hide();
-            }
-
-            function show_super(x) {
-                show_factor('<?php echo $GLOBALS['line']; ?>');
-                $('tr.nofactor').hide();
-                $('tr.super_ok').hide();
-                $('tr.d1').hide();
-            }
-        </script>
-
-        <input type="hidden" id="parent_" value="<?php echo $GLOBALS['line']; ?>" />
-        <script>
-            $(document).ready(function() {
-                let parent = $('#parent_').val();
-                if (parent == '*' || parent == '**') {
-                    $('.data').show();
-                } else {
-                    $('.data').hide();
-                    $('.l' + parent).show();
-                }
-
-                $('tr.d1').hide();
-
-                let al_cbd = $('*').find('.data').length / 2;
-                let al_fac = $('*').find('.factor').length / 2;
-                let al_insta = $('*').find('.l5').length / 2;
-                let no_super = $('*').find('.super_no').length / 2;
-                let no_manager = $('*').find('.manager_no').length / 2;
-                let no_acc = $('*').find('.acc_no').length / 2;
-
-                /* $('#all_cbd').text(al_cbd);
-                $('#all_factors').text(al_fac);
-                $('#insta_factor').text(al_insta);
-                $('#super_factor').text(no_super);
-                $('#manager_factor').text(no_manager);
-                $('#acc_factor').text(no_acc); */
-
-
-            });
-
-            $('#labelzan').click(function() {
-                window.location.assign('https://perfumeara.com/webapp/app_new/panel/label.php?date=<?php echo $_GET["date"]; ?>');
-            });
-        </script>
-
-        <style>
-            .doc {
-                position: relative;
-            }
-
-            .doc table {
-                position: absolute;
-                top: -5rem;
-                right: -1.4rem;
-                border: none;
-            }
-
-            .doc table td:nth-child(1) {
-                width: 8.5rem;
-            }
-
-            .doc table td:nth-child(2) {
-                width: 10rem;
-            }
-
-            .doc table td:nth-child(3) {
-                width: 10.4rem;
-            }
-
-            .doc table td:nth-child(4) {
-                width: 11.3rem;
-            }
-
-            .doc table td:nth-child(5) {
-                width: 10.2rem;
-            }
-
-            .doc table td:nth-child(6) {
-                width: 10.8rem;
-            }
-
-            .doc td,
-            .doc tr,
-            .doc table {
-                border: none;
-            }
-
-            .doc button {
-                width: 140px;
-                height: 60px;
-            }
-        </style>
-
-        <?php
-        if ($_GET['g'] == 'b8e0f272c78fbcb1944a56f5e37158a2') {
-            echo '<script>
-            $(document).ready(function() {
-                $("*").find(".l100").hide();
-            });</script>';
-        }
-
-        ?>
-        <script src="../js/popper.min.js"></script>
-        <script src="../js/bootstrap.min.js"></script>
-        <script src="../js/bundle.js"></script>
-        <script src="../js/user_login.js"></script>
-        <!-- Active JS -->
-        <script src="./js/default-assets/active.js"></script>
-</body>
+<?php
+if ($data_users['pos'] == 0) {
+    include('acc_new_body.php');
+} else {
+    echo '
+        <h1 style="color:red">دسترسی شما به این سامانه مسدود شده است</h1>
+    ';
+}
+?>
 
 </html>

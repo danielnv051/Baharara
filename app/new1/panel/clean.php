@@ -24,11 +24,40 @@ for ($i = 0; $i < $num; $i++) {
     }
 }
 
-echo '<br/>number: ' . $n;
+/* delete factors without tedad,offer,tester */
+$sqll = "SELECT * FROM `factor` WHERE tedad = 0 AND offer = 0 AND tester = 0;";
+$ww = mysqli_query($GLOBALS['conn'], $sqll);
+$nn = mysqli_num_rows($ww);
+
+$sqll = "DELETE FROM `factor` WHERE tedad = 0 AND offer = 0 AND tester = 0;";
+$ww = mysqli_query($GLOBALS['conn'], $sqll);
+
+
+/* delete admin cbd, factor, log */
+$sqlb = "SELECT * FROM `cbd` WHERE `uid` = 100";
+$resultb = mysqli_query($GLOBALS['conn'], $sqlb);
+$nnw = mysqli_num_rows($resultb);
 
 $sqlb = "DELETE FROM `cbd` WHERE `uid` = 100";
 $resultb = mysqli_query($GLOBALS['conn'], $sqlb);
+
+$sqlb = "SELECT * FROM `factor` WHERE `uid` = 100";
+$resultb = mysqli_query($GLOBALS['conn'], $sqlb);
+$nnwa = mysqli_num_rows($resultb);
+
 $sqlb = "DELETE FROM `factor` WHERE `uid` = 100";
 $resultb = mysqli_query($GLOBALS['conn'], $sqlb);
+
+$sqlb = "SELECT * FROM `seller_loc` WHERE `uid` = 100";
+$resultb = mysqli_query($GLOBALS['conn'], $sqlb);
+$nnwaa = mysqli_num_rows($resultb);
+
 $sqlb = "DELETE FROM `seller_loc` WHERE `uid` = 100";
 $resultb = mysqli_query($GLOBALS['conn'], $sqlb);
+
+/* report */
+echo '<br/>CBD without factor: ' . $n . '<br/>';
+echo '<br/>Factors without tedad,offer,tester: ' . $nn . '<br/>';
+echo '<br/>Admin cbd: ' . $nnw . '<br/>';
+echo '<br/>Admin factors: ' . $nnwa . '<br/>';
+echo '<br/>Admin loc: ' . $nnwaa . '<br/>';

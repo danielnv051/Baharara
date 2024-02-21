@@ -1,6 +1,5 @@
 <?php require_once('public_css.php');
 include_once('func.php');
-$masir = masir();
 ?>
 
 <link rel="stylesheet" href="static/css/lib/persian-datepicker.min.css" />
@@ -77,16 +76,15 @@ $masir = masir();
 </div>
 
 <?php
-//$page_title = 'فرم ماموریت پرسنل';
 $back = 1;
 require_once('slider.php'); ?>
 <input type=" hidden" id="uid" value="<?php echo $_COOKIE['uid']; ?>" />
 
 <script src="./js/index.js"></script>
+<script src="static/js/lib/persian-date.min.js"></script>
+<script src="static/js/lib/persian-datepicker.min.js"></script>
 
 <script>
-    //$('#headTitle').text('فرم ماموریت پرسنل');
-
     function date_diffrence() {
         d1 = parseInt($('#start_unix').text());
         d2 = parseInt($('#end_unix').text());
@@ -95,12 +93,7 @@ require_once('slider.php'); ?>
         var diff = Math.abs(d1 - d2);
         let final = diff / (60 * 60 * 24);
     }
-</script>
 
-<script src="static/js/lib/persian-date.min.js"></script>
-<script src="static/js/lib/persian-datepicker.min.js"></script>
-
-<script>
     $(' .toggle_from').click(function() {
         $(".range-from-example").toggle(500);
         $(".range-to-example").hide(500);
@@ -191,7 +184,7 @@ require_once('slider.php'); ?>
             alert('لطفا تمامی فیلد ها را تکمیل کنید');
         } else {
             $.ajax({
-                data: 'rest=ok&uid=' + uid + '&s_unix=' + start_unix + '&s_fa=' + start_fa + '&e_unix=' + end_unix + '&e_fa=' + end_fa,
+                data: 'rest=ok&uid=' + uid + '&s_unix=' + start_unix + '&s_fa=' + start_fa + '&e_unix=' + end_unix + '&e_fa=' + end_fa + '&from_hour=' + from_rest_hour + '&to_hour=' + to_rest_hour + '&reason=' + reason,
                 url: 'server.php',
                 type: 'GET',
                 success: function(result) {
@@ -202,13 +195,6 @@ require_once('slider.php'); ?>
                 }
             });
         }
-    }
-
-    function closeCity(id) {
-        $('.' + id).remove();
-        var txt = String(id) + ',';
-        var route = $('#route_array').text();
-        $('#route_array').text(route.replace(txt, ''));
     }
 </script>
 

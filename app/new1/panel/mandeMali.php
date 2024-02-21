@@ -2,9 +2,11 @@
 
 <?php
 require_once '../func.php';
+error_reporting(0);
 
 $region = [];
 $mandeha = [];
+$mandehaa = [];
 $visitor_name = [];
 
 function regions()
@@ -38,7 +40,7 @@ function visitor($customer)
 function mande_customer($code)
 {
     db();
-    $sql = "SELECT * FROM `mande` WHERE `code` = '" . $code . "'";
+    $sql = "SELECT * FROM `mande` WHERE `code` = " . $code;
     $w = mysqli_query($GLOBALS['conn'], $sql);
     if ($w) {
         $num = mysqli_num_rows($w);
@@ -46,9 +48,40 @@ function mande_customer($code)
             $rows = mysqli_fetch_assoc($w);
             $mande = $rows['mande'];
             return $mande;
+        } else {
+            return 0;
         }
     } else {
         return 0;
+    }
+}
+
+function mande_customer_name($name, $region)
+{
+    db();
+    $sql = "SELECT * FROM `moshtari` WHERE `esm` LIKE '%" . $name . "%' AND `region` = '" . $region . "'";
+    $w = mysqli_query($GLOBALS['conn'], $sql);
+    if ($w) {
+        $num = mysqli_num_rows($w);
+        if ($num > 0) {
+            $rows = mysqli_fetch_assoc($w);
+            $code = $rows['code'];
+
+            $sql = "SELECT * FROM `mande` WHERE `code` LIKE '%" . $code . "%'";
+            $w = mysqli_query($GLOBALS['conn'], $sql);
+            if ($w) {
+                $num = mysqli_num_rows($w);
+                if ($num > 0) {
+                    $rows = mysqli_fetch_assoc($w);
+                    $mande = $rows['mande'];
+                    return $mande;
+                } else {
+                    return 0;
+                }
+            } else {
+                return 0;
+            }
+        }
     }
 }
 
@@ -65,8 +98,30 @@ function mande_by_region($region)
             $esm = $rows['esm'];
             $addr = $rows['addr'];
             $mande = mande_customer($code);
+            $ww = visitor("$esm");
+            $www = explode(',', $ww);
             if (intval($mande) > 0) {
-                $GLOBALS['mandeha'][$region][$code] = ['name' => $esm, 'mande' => $mande, 'addr' => $addr];
+                $GLOBALS['mandeha'][$region][$code] = ['name' => $esm, 'mande' => $mande, 'addr' => $addr, 'seller' => $www[0]];
+            }
+        }
+    }
+}
+
+function mande_by_visitor($visitor_name, $region)
+{
+    db();
+    $sql = "SELECT * FROM `remain_cash` WHERE `seller` = '" . $visitor_name . "'";
+    $w = mysqli_query($GLOBALS['conn'], $sql);
+    if ($w) {
+        $num = mysqli_num_rows($w);
+        for ($i = 0; $i < $num; $i++) {
+            $rows = mysqli_fetch_assoc($w);
+            $customer = $rows['customer'];
+            if ($visitor_name != '-') {
+                $mande = mande_customer_name("$customer", $region);
+                if (intval($mande) > 0) {
+                    $GLOBALS['mandehaa']["$visitor_name"]['mande'] += $mande;
+                }
             }
         }
     }
@@ -129,17 +184,18 @@ function final_report()
                         $cus_name = $GLOBALS['mandeha']["$reg"][$keys[$k]]['name'];
                         $cus_mande = $GLOBALS['mandeha']["$reg"][$keys[$k]]['mande'];
                         $cus_addr = $GLOBALS['mandeha']["$reg"][$keys[$k]]['addr'];
-                        $sum_region += $cus_mande;
+
                         $remain = visitor("$cus_name");
                         if ($remain) {
                             $c = explode(',', $remain);
                             $visitor = $c[0];
                             $tarikh = $c[1];
+                            $GLOBALS['visitor_name'][$visitor] = $visitor;
                         } else {
                             $visitor = '-';
                             $tarikh = '-';
                         }
-                        $GLOBALS['visitor_name'][$visitor] = $visitor;
+
                         $esm = explode('(', $cus_name);
                         if (strlen($tarikh) > 2) {
                             $zaman = '<td rowspan="1" style="text-align:center">' . substr($tarikh, 0, 4) . '/' . substr($tarikh, 4, 2) . '/' . substr($tarikh, 6, 2) . '</td>';
@@ -147,7 +203,10 @@ function final_report()
                             $zaman = '<td rowspan="1" style="text-align:center">-</td>';
                         }
 
-                        echo '
+                        if ($visitor != '-') {
+                            $sum_region += $cus_mande;
+
+                            echo '
                             <tr>
                                 <td rowspan="1" style="text-align:center">' . $cus_code . '</td>
                                 <td rowspan="1" style="text-align:right;font-weight:bold">' . $esm[0] . ' (' . $cus_addr . ')</td>
@@ -155,8 +214,8 @@ function final_report()
                                 ' . $zaman . '
                                 <td rowspan="1" style="text-align:center">' . $visitor . '</td>
                             </tr>
-                            
                         ';
+                        }
                     }
                     echo '
                         <tr>
@@ -181,9 +240,13 @@ function final_report()
 </table>
 
 <?php
-$cc = count($visitor_name);
+/* $keyss = array_keys($visitor_name);
+$cc = count($keyss);
 for ($ll = 0; $ll < $cc; $ll++) {
-}
+    $vv = $_GET['region'];
+    mande_by_visitor("$keyss[$ll]", "$vv");
+} */
+
 ?>
 <table>
     <tr>
@@ -196,9 +259,17 @@ for ($ll = 0; $ll < $cc; $ll++) {
                 $makan = 'همه مناطق';
             };
             echo $makan;
+
+            $v_n = '';
+            $re = array_keys($mandeha)[0];
+            $re_code = array_keys($mandeha[$re])[0];
+            $re_code_detail = array_keys($mandeha[$re][$re_code]);
+            echo ($mandeha[$re][$re_code]['seller']);
+
             ?>
         </th>
     </tr>
+
 </table>
 
 <table class="from_">
