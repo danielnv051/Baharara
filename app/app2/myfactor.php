@@ -89,7 +89,7 @@ for ($i = 0; $i < $y; $i++) {
                 break;
             case 4:
                 $acc = 'تایید حسابداری';
-                $bg = '#009688';
+                $bg = '#80CBC4';
                 $txt = '#141a1a';
                 break;
             default:
@@ -113,10 +113,34 @@ for ($i = 0; $i < $y; $i++) {
         }
         $j = $i + 1;
 
+        $allfactors = get_factor_info($x[$i]['id']);
+        $factor_tedad = mysqli_num_rows($allfactors);
+        if ($factor_tedad > 0) {
+            $allfactors = mysqli_fetch_assoc($allfactors);
+            $factor_tadbir = $allfactors['num'];
+            $factor_geo = $allfactors['geo'];
+            $gfi = get_factor_info1($allfactors['num']);
+            $gfi_tedad = mysqli_num_rows($gfi);
+            if ($gfi_tedad > 0) {
+                $gfi_ = mysqli_fetch_assoc($gfi);
+                $factor_driver = $gfi_['dist'];
+                $factor_tarikh = substr($gfi_['tarikh'], 0, 4) . '/' . substr($gfi_['tarikh'], 4, 2) . '/' . substr($gfi_['tarikh'], 6, 2);
+            } else {
+                $factor_driver = '-';
+                $factor_tarikh = '-';
+            }
+        } else {
+            $factor_tadbir = '-';
+            $factor_geo = '-';
+            $factor_driver = '-';
+            $factor_tarikh = '-';
+        }
+
+
         $z .= '        
     <table id="ttarget" class="t' . $j . '" style="user-select: none;background-color:' . $bg . '">
     <tr>
-    <td rowspan="6" style="text-align: center;padding: 1rem;font-size: 2rem;border: 1px solid #fff;">
+    <td rowspan="5" style="text-align: center;padding: 1rem;font-size: 2rem;border: 1px solid #fff;">
     ' . $j . '<br/> <span class="factor_types" style="font-size:1rem;' . $f_bg . '">' . $factor_type . '</span>
     </td>
         <th style="width:50%">
@@ -165,9 +189,30 @@ for ($i = 0; $i < $y; $i++) {
             ' . $acc . '
         </th>
     </tr>
+    <tr>
+        <th style="color:#000">
+            شماره فاکتور: ' . $factor_tadbir . '
+        </th>
+        <th style="color:#000">
+            منطقه: ' . $factor_geo . '
+        </th>
+    </tr>
+    <tr>
+        <th style="color:#000">
+            موزع: ' . $factor_driver . '
+        </th>
+        <th style="color:#000">
+            توزیع: ' . $factor_tarikh . '
+        </th>
+    </tr>
     <tr style="text-align:center">
-        <th colspan="2" style="padding: 0.5rem;">
+        <th colspan="3" style="padding: 0.5rem;">
             <a class="show_factor_btn" href="https://perfumeara.com/webapp/app_new/panel/factor.php?f=' . $my_factor_ids . '&d=' . $my_date . '" target="_blank">مشاهده فاکتور</a>
+        </th>
+    </tr>
+    <tr style="text-align:center">
+        <th colspan="3" style="padding: 0.5rem;">
+            <a class="show_factor_btn" href="https://perfumeara.com/webapp/app_new/panel/pdf.php?f=' . $my_factor_ids . '&d=' . $my_date . '" target="_blank">دانلود فاکتور</a>
         </th>
     </tr>
 </table>

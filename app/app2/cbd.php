@@ -48,7 +48,7 @@ if ($both == '1' || $manager == 1) {
         </div>
         <div class="btn_opr">
             <button class="btn btn-warning btn-half" id="visit" onclick="<?php echo $y; ?>">ثبت ویزیت </button>
-            <button class="btn btn-warning btn-half" id="visit_" onclick="open_page('statics')">آمار ویزیت </button>
+            <!-- <button class="btn btn-warning btn-half" id="visit_" onclick="open_page('statics')">آمار ویزیت </button> -->
         </div>
         <button class="btn btn-info" id="return" onclick="open_page('enter')">بازگشت</button>
     </fieldset>
@@ -75,6 +75,7 @@ require_once('slider.php'); ?>
         justify-content: center;
         flex-direction: row;
         flex-wrap: nowrap;
+        width: -webkit-fill-available;
     }
 </style>
 

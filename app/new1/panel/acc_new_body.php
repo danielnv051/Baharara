@@ -281,78 +281,91 @@
                                             </tr>
                                             ";
                                             }
+
+                                            $kol = intval($visit_plus) + intval($visit_neg);
                                             ?>
                                         </tr>
                                     </table>
 
                                     <table style="display:none; text-align: center;display:inline;float: right;border: 1px solid #000;margin-bottom:0.5rem;margin-top:0.5rem">
                                         <tr>
-                                            <th colspan="8">اطلاعات ویزیت</th>
+                                            <th colspan="10" style="border-bottom: 2px solid #000;">اطلاعات ویزیت</th>
                                         </tr>
                                         <tr>
-                                            <td>تعداد کل ویزیت</td>
-                                            <td>ویزیت موفق</td>
-                                            <td>ویزیت ناموفق</td>
-                                            <td>مشتری قدیم</td>
-                                            <td>مشتری جدید</td>
-                                            <td>رسمی</td>
-                                            <td>متفرقه</td>
-                                            <td>پرفیوم آرا</td>
-                                            <td>تاپوتی</td>
-                                            <td>اینستاگرام</td>
+                                            <td style="border-left: 2px solid #000;border-bottom: 2px solid #000;">تعداد کل ویزیت</td>
+                                            <td style="border-bottom: 2px solid #000;">ویزیت موفق</td>
+                                            <td style="border-left: 2px solid #000;border-bottom: 2px solid #000;">ویزیت ناموفق</td>
+                                            <td style="border-bottom: 2px solid #000;">مشتری قدیم</td>
+                                            <td style="border-left: 2px solid #000;border-bottom: 2px solid #000;">مشتری جدید</td>
+                                            <td style="border-bottom: 2px solid #000;">رسمی</td>
+                                            <td style="border-left: 2px solid #000;border-bottom: 2px solid #000;">متفرقه</td>
+                                            <td style="border-bottom: 2px solid #000;">پرفیوم آرا</td>
+                                            <td style="border-left: 2px solid #000;border-bottom: 2px solid #000;">تاپوتی</td>
+                                            <td style="border-bottom: 2px solid #000;">اینستاگرام</td>
                                         </tr>
                                         <tr>
-                                            <td>
-                                                <?php echo ($visit_plus + $visit_neg); ?>
+                                            <td style="border-left: 2px solid #000;">
+                                                <span id="total_"><?php echo ($visit_plus + $visit_neg); ?></span><br />(100%)
                                             </td>
                                             <td>
-                                                <?php echo $visit_plus; ?>
+                                                <?php echo $visit_plus; ?><br />(<?php echo round($visit_plus * 100 / $kol); ?>%)
+                                            </td>
+                                            <td style="border-left: 2px solid #000;">
+                                                <?php echo $visit_neg; ?><br />(<?php echo round($visit_neg * 100 / $kol); ?>%)
                                             </td>
                                             <td>
-                                                <?php echo $visit_neg; ?>
+                                                <?php echo $old_customer_count; ?><br />(<?php echo round($old_customer_count * 100 / $kol); ?>%)
+                                            </td>
+                                            <td style="border-left: 2px solid #000;">
+                                                <?php echo $new_customer_count; ?><br />(<?php echo round($new_customer_count * 100 / $kol); ?>%)
                                             </td>
                                             <td>
-                                                <?php echo $old_customer_count; ?>
+                                                <span id="rasmi">0</span><br />(<span id="rasmi_percent"></span>%)
+                                            </td>
+                                            <td style="border-left: 2px solid #000;">
+                                                <span id="norasmi">0</span><br />(<span id="norasmi_percent"></span>%)
                                             </td>
                                             <td>
-                                                <?php echo $new_customer_count; ?>
+                                                <span id="ara_order">0</span><br />(<span id="ara_percent"></span>%)
+                                            </td>
+                                            <td style="border-left: 2px solid #000;">
+                                                <span id="tapputi_order">0</span><br />(<span id="tapputi_percent"></span>%)
                                             </td>
                                             <td>
-                                                <span id="rasmi">0</span>
-                                            </td>
-                                            <td>
-                                                <span id="norasmi">0</span>
-                                            </td>
-                                            <td>
-                                                <span id="ara_order">0</span>
-                                            </td>
-                                            <td>
-                                                <span id="tapputi_order">0</span>
-                                            </td>
-                                            <td>
-                                                <span id="insta_order">0</span>
+                                                <span id="insta_order">0</span><br />(<span id="insta_percent"></span>%)
                                             </td>
                                         </tr>
                                     </table>
 
-                                    <table style="text-align: center;display:none;float: right;border: 1px solid #000;margin-bottom:0.5rem;margin-top:0.5rem">
+                                    <table style="text-align: center;display:block;float: right;border: 1px solid #000;margin-bottom:0.5rem;margin-top:0.5rem">
                                         <?php manategh_($manategh); ?>
                                     </table>
 
                                 </div>
-                                <div class=" row" style="width: max-content; margin: 0 auto;">
-                                    <form method="get" action="acc_new.php" class="print">
-                                        <label>تاریخ مورد نظر را وارد کنید: <input type="date" name="date" id="day" class="form-control"> </label>
-                                        <input type="hidden" name="g" value="<?php echo $_GET['g']; ?>" />
-                                        <button type="submit" class="btn btn-warning">نمایش</button>
-                                        <button>
-                                            <a href="javascript:if(window.print)window.print()" class="btn btn-primary">چاپ</a>
-                                        </button>
-                                    </form>
-                                </div>
                                 <input type="hidden" id="uid" value="<?php echo $_GET['uid']; ?> name=" uid" />
                             </div>
                         </div>
+                        <br />
+                        <div class=" row" style="width: inherit; margin: 0 auto;">
+                            <form method="get" action="acc_new.php" class="print">
+                                <label>تاریخ مورد نظر را انتخاب کنید: </label>
+
+                                <a class="btn btn-info btn-return v3 toggle_from" style="display:none">
+                                    <input id="start_from_en" name="date" style="display:none"></span>
+                                    <span id="start_unix" style="display:none"></span>
+                                    </h5>
+                                </a>
+                                <div class="range-from-example"></div>
+
+                                <input type="hidden" name="g" value="<?php echo $_GET['g']; ?>" />
+                                <button type="submit" class="btn btn-warning">نمایش</button>
+                                <button>
+                                    <a href="javascript:if(window.print)window.print()" class="btn btn-primary">چاپ</a>
+                                </button>
+                            </form>
+                        </div>
+
+
                         <div class="text-center">
                             <span class="">©</span>
                             <label class="font-12">
@@ -435,6 +448,7 @@
         </script>
 
         <input type="hidden" id="parent_" value="<?php echo $GLOBALS['line']; ?>" />
+
         <script>
             $(document).ready(function() {
                 let parent = $('#parent_').val();
@@ -467,6 +481,7 @@
             $('#labelzan').click(function() {
                 window.location.assign('https://perfumeara.com/webapp/app_new/panel/label.php?date=<?php echo $_GET["date"]; ?>');
             });
+            var totale = $('#total_').text();
             var ara = $('tr.l1.acc_ok').length / 2;
             var tapputi = $('tr.l2.acc_ok').length / 2;
             var insta = $('tr.l5.acc_ok').length / 2;
@@ -477,6 +492,12 @@
             $('#insta_order').text(insta);
             $('#rasmi').text(rasmi);
             $('#norasmi').text(norasmi);
+
+            $('#rasmi_percent').text(Math.round(rasmi * 100 / totale));
+            $('#norasmi_percent').text(Math.round(norasmi * 100 / totale));
+            $('#ara_percent').text(Math.round(ara * 100 / totale));
+            $('#tapputi_percent').text(Math.round(tapputi * 100 / totale));
+            $('#insta_percent').text(Math.round(insta * 100 / totale));
         </script>
 
         <style>
@@ -525,6 +546,10 @@
                 width: 140px;
                 height: 60px;
             }
+
+            form {
+                width: 30%;
+            }
         </style>
 
         <?php
@@ -540,6 +565,91 @@
         <script src="../js/bootstrap.min.js"></script>
         <script src="../js/bundle.js"></script>
         <script src="../js/user_login.js"></script>
+        <script src="../js/jquery-3.4.1.min.js"></script>
         <!-- Active JS -->
-        <script src="./js/default-assets/active.js"></script>
+        <script src="../js/default-assets/active.js"></script>
+
+        <link rel="stylesheet" href="../../app2/static/css/lib/persian-datepicker.min.css" />
+        <link rel="stylesheet" href="../../app2/static/css/main.css" />
+
+        <script src="../../app2/static/js/lib/persian-date.min.js"></script>
+        <script src="../../app2/static/js/lib/persian-datepicker.min.js"></script>
+
+        <script>
+            $(' .toggle_from').click(function() {
+                $(".range-from-example").toggle(500);
+                $(".range-to-example").hide(500);
+                $('.month-grid-box .header').hide();
+            });
+            $('.toggle_to').click(function() {
+                $(".range-from-example").hide(500);
+                $(".range-to-example").toggle(500);
+                $('.month-grid-box .header').hide();
+            });
+            var to, from;
+            to = $(".range-to-example").persianDatepicker({
+                inline: true,
+                altField: '.range-to-example-alt',
+                altFormat: 'LLLL',
+                initialValue: false,
+                onSelect: function(unix) {
+                    $('#end_unix').text(unix);
+                    const d = new Date(unix);
+                    var year = d.getFullYear();
+                    var month = ("0" + (d.getMonth() + 1)).slice(-2);
+                    var rooz = ("0" + d.getDate()).slice(-2);
+                    $.ajax({
+                        data: 'zaman=' + year + '-' + month + '-' + rooz,
+                        url: '../server.php',
+                        type: 'POST',
+                        success: function(result) {
+                            $('#end_to_fa').text(result);
+                            $('#end_to_en').val(year + '-' + month + '-' + rooz);
+                        }
+                    });
+                    to.touched = true;
+                    if (from && from.options && from.options.maxDate != unix) {
+                        var cachedValue = from.getState().selected.unixDate;
+                        from.options = {
+                            maxDate: unix
+                        };
+                        if (from.touched) {
+                            from.setDate(cachedValue);
+                        }
+                    }
+                }
+            });
+            from = $(".range-from-example").persianDatepicker({
+                inline: true,
+                altField: '.range-from-example-alt',
+                altFormat: 'LLLL',
+                initialValue: false,
+                onSelect: function(unix) {
+                    $('#start_unix').text(unix);
+                    const d = new Date(unix);
+                    var year = d.getFullYear();
+                    var month = ("0" + (d.getMonth() + 1)).slice(-2);
+                    var rooz = ("0" + d.getDate()).slice(-2);
+                    $.ajax({
+                        data: 'zaman=' + year + '-' + month + '-' + rooz,
+                        url: '../server.php',
+                        type: 'POST',
+                        success: function(result) {
+                            $('#start_from_fa').text(result);
+                            $('#start_from_en').val(year + '-' + month + '-' + rooz);
+                        }
+                    });
+                    from.touched = true;
+                    if (to && to.options && to.options.minDate != unix) {
+                        var cachedValue = to.getState().selected.unixDate;
+                        to.options = {
+                            minDate: unix
+                        };
+                        if (to.touched) {
+                            to.setDate(cachedValue);
+                        }
+                    }
+                }
+            });
+        </script>
 </body>

@@ -12,7 +12,6 @@ $mission = [];
 $users = [];
 $seller_  = '';
 $customer_sign_   = '';
-$masr = 'مشهد > ';
 
 $super_pos = '';
 $manager_pos = '';
@@ -21,13 +20,8 @@ $acc_pos = '';
 $night = 0;
 $day = 0;
 
-function masir($id)
-{
-    $sql = "SELECT * FROM masir WHERE `id` = $id";
-    $result = mysqli_query($GLOBALS['conn'], $sql);
-    $r = mysqli_fetch_assoc($result);
-    return $r['city'];
-}
+$sum_ = 0;
+
 
 function mission($id)
 {
@@ -90,6 +84,47 @@ function mission($id)
     }
 }
 
+function last_donate($uid)
+{
+    db();
+    $idd = $_GET['id'];
+    $sql = "SELECT * FROM mission WHERE `uid` =$uid AND `type`=3 AND id<$idd ORDER BY id DESC LIMIT 0,5";
+    $result = mysqli_query($GLOBALS['conn'], $sql);
+    if ($result) {
+        $n = mysqli_num_rows($result);
+        if ($n > 0) {
+            for ($i = 0; $i < $n; $i++) {
+                $r = mysqli_fetch_assoc($result);
+                $id = $r['id'];
+                $s_ = $r['start_fa'];
+                $home = $r['home'];
+                $GLOBALS['sum_'] += $home;
+                $xx = explode(',', $r['sign']);
+                if (count($xx) > 4) {
+                    $pos = '<svg style="color:green" id="plus_svg" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16"> <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path> </svg>';
+                } else {
+                    $pos = '<svg style="color:red" id="neg_svg" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-dash-circle-fill" viewBox="0 0 16 16"> <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"></path> </svg>';
+                }
+
+                echo "
+                <tr>
+                    <td><a href='https://perfumeara.com/webapp/app_new/panel/formDonate1.php?id=$id&type=donate'>$id</a></td>
+                    <td>$s_</td>
+                    <td>" . sep3($home) . " ریال</td>
+                    <td>" . $pos . "</td>
+                </tr>
+            ";
+            }
+        } else {
+            echo '
+            <tr>
+                <td colspan="5">-</td>
+            </tr>
+            ';
+        }
+    }
+}
+
 function users($uid)
 {
     db();
@@ -101,20 +136,143 @@ function users($uid)
     }
 }
 
-function banks($bank_sheba)
+class Number2Word
 {
-    db();
-    $sql = "SELECT * FROM bank WHERE `sheba`='" . $bank_sheba . "'";
-    $result = mysqli_query($GLOBALS['conn'], $sql);
-    if ($result) {
-        $r = mysqli_fetch_assoc($result);
-        return $r['bank'];
+
+    protected $digit1 = array(
+        0 => 'صفر',
+        1 => 'یک',
+        2 => 'دو',
+        3 => 'سه',
+        4 => 'چهار',
+        5 => 'پنج',
+        6 => 'شش',
+        7 => 'هفت',
+        8 => 'هشت',
+        9 => 'نه',
+    );
+    protected $digit1_5 = array(
+        1 => 'یازده',
+        2 => 'دوازده',
+        3 => 'سیزده',
+        4 => 'چهارده',
+        5 => 'پانزده',
+        6 => 'شانزده',
+        7 => 'هفده',
+        8 => 'هجده',
+        9 => 'نوزده',
+    );
+    protected $digit2 = array(
+        1 => 'ده',
+        2 => 'بیست',
+        3 => 'سی',
+        4 => 'چهل',
+        5 => 'پنجاه',
+        6 => 'شصت',
+        7 => 'هفتاد',
+        8 => 'هشتاد',
+        9 => 'نود'
+    );
+    protected $digit3 = array(
+        1 => 'صد',
+        2 => 'دویست',
+        3 => 'سیصد',
+        4 => 'چهارصد',
+        5 => 'پانصد',
+        6 => 'ششصد',
+        7 => 'هفتصد',
+        8 => 'هشتصد',
+        9 => 'نهصد',
+    );
+    protected $steps = array(
+        1 => 'هزار',
+        2 => 'میلیون',
+        3 => 'بیلیون',
+        4 => 'تریلیون',
+        5 => 'کادریلیون',
+        6 => 'کوینتریلیون',
+        7 => 'سکستریلیون',
+        8 => 'سپتریلیون',
+        9 => 'اکتریلیون',
+        10 => 'نونیلیون',
+        11 => 'دسیلیون',
+    );
+    protected $t = array(
+        'and' => 'و',
+    );
+
+    function number_format($number, $decimal_precision = 0, $decimals_separator = '.', $thousands_separator = ',')
+    {
+        $number = explode('.', str_replace(' ', '', $number));
+        $number[0] = str_split(strrev($number[0]), 3);
+        $total_segments = count($number[0]);
+        for ($i = 0; $i < $total_segments; $i++) {
+            $number[0][$i] = strrev($number[0][$i]);
+        }
+        $number[0] = implode($thousands_separator, array_reverse($number[0]));
+        if (!empty($number[1])) {
+            $number[1] = round($number[1], $decimal_precision);
+        }
+        return implode($decimals_separator, $number);
+    }
+
+    protected function groupToWords($group)
+    {
+        $d3 = floor($group / 100);
+        $d2 = floor(($group - $d3 * 100) / 10);
+        $d1 = $group - $d3 * 100 - $d2 * 10;
+
+        $group_array = array();
+
+        if ($d3 != 0) {
+            $group_array[] = $this->digit3[$d3];
+        }
+
+        if ($d2 == 1 && $d1 != 0) { // 11-19
+            $group_array[] = $this->digit1_5[$d1];
+        } else if ($d2 != 0 && $d1 == 0) { // 10-20-...-90
+            $group_array[] = $this->digit2[$d2];
+        } else if ($d2 == 0 && $d1 == 0) { // 00
+        } else if ($d2 == 0 && $d1 != 0) { // 1-9
+            $group_array[] = $this->digit1[$d1];
+        } else { // Others
+            $group_array[] = $this->digit2[$d2];
+            $group_array[] = $this->digit1[$d1];
+        }
+
+        if (!count($group_array)) {
+            return FALSE;
+        }
+
+        return $group_array;
+    }
+
+    public function numberToWords($number)
+    {
+        $formated = $this->number_format($number, 0, '.', ',');
+        $groups = explode(',', $formated);
+
+        $steps = count($groups);
+
+        $parts = array();
+        foreach ($groups as $step => $group) {
+            $group_words = self::groupToWords($group);
+            if ($group_words) {
+                $part = implode(' ' . $this->t['and'] . ' ', $group_words);
+                if (isset($this->steps[$steps - $step - 1])) {
+                    $part .= ' ' . $this->steps[$steps - $step - 1];
+                }
+                $parts[] = $part;
+            }
+        }
+        return implode(' ' . $this->t['and'] . ' ', $parts);
     }
 }
 
+$number = new Number2Word;
+
 mission($_GET['id']);
 users($mission['u_id']);
-$bank = banks(substr($users[5], 2, 3));
 
 $seller_pic = 'https://perfumeara.com/webapp/app2/img/users/' . $mission['uid'] . '.jpg';
 $seller_sign = $users[3];
@@ -210,12 +368,6 @@ if (isset($sign_[3]) && $sign_[3] > 0) {
     </td>';
 }
 
-
-switch ($_GET['type']) {
-    case 'mission':
-        $paper = 'ماموریت';
-        break;
-}
 ?>
 <!DOCTYPE html>
 <html lang="fa" style="background:#fff">
@@ -279,7 +431,7 @@ switch ($_GET['type']) {
             flex-direction: row;
             align-items: center;
             width: 100%;
-            justify-content: flex-start;
+            justify-content: center;
             padding: 0.2rem;
         }
 
@@ -307,16 +459,12 @@ switch ($_GET['type']) {
 </head>
 
 <body>
-
-
-    <div class="watermark"><?php echo $mission['mission_name'];
-                            $aks = $mission['u_id'] ?></div>
     <div class="factor_detail">
         <div class="logos">
-            <img src="../../app1/img/users/<?php echo $aks; ?>.jpg" style="width: 48px;" />
+            <img src="../../app1/img/users/<?php echo $mission['u_id']; ?>.jpg" style="width: 48px;" />
         </div>
         <div class="info bold">
-            فرم <?php echo $paper; ?>
+            فرم مساعده
         </div>
         <div class="logos">
             <img src="https://perfumeara.com/webapp/app1/img/users/200.jpg" style="width: 4rem" />
@@ -349,98 +497,32 @@ switch ($_GET['type']) {
         </div>
     </div>
 
-    <div class="factor_detail masir">
-        <span>مسیر ماموریت:</span>
-        <span class="bold"><?php echo $masr; ?> > مشهد</span>
-    </div>
     <?php
     $days = ['Sat' => 'شنبه', 'Sun' => 'یکشنبه', 'Mon' => 'دوشنبه', 'Tue' => 'سه شنبه', 'Wed' => 'چهارشنبه', 'Thu' => 'پنج شنبه', 'Fri' => 'جمعه'];
     $start_day = date('D', $mission['s_unix'] / 1000);
     $end_day = date('D', $mission['e_unix'] / 1000);
 
     ?>
-    <div class="factor_detail">
-        <span>از تاریخ : <span class="bold"><?php echo  $mission['s_fa'] . ' (' . $days[$start_day] . ')'; ?></span></span>
-        <span>تا تاریخ : <span class="bold"><?php echo $mission['e_fa'] . ' (' . $days[$end_day] . ')'; ?></span></span>
-    </div>
-    <?php
-    if ($mission['vehicle_num'] == '-null--') {
-        $pelak[0] = '';
-        $pelak[1] = '';
-        $pelak[2] = '';
-        $pelak[3] = '';
-        $vasile = 'ناوگان حمل و نقل عمومی';
-    } else {
-        $pelak = explode('-', $mission['vehicle_num']);
-        $vasile = $mission['vehicle_name'];
-    }
-    ?>
-    <div class="factor_detail">
-        <span>وسیله نقلیه: <span class="bold"><?php echo $vasile; ?></span></span>
-        <div class="pelak">
-            <img src="pelak.jpg" alt="pelak">
-            <div class="p2"><?php echo $mission['p2']; ?></div>
-            <div class="alph"><?php echo $mission['alph']; ?></div>
-            <div class="p3"><?php echo $mission['p3']; ?></div>
-            <div class="p4"><?php echo $mission['p4']; ?></div>
-        </div>
-    </div>
-    <?php
-    if ($night > 0) {
-        $n_time = $night;
-    } else {
-        $n_time = round(($mission['e_unix'] - $mission['s_unix'] - 1) / (3600000 * 24), 0);
-    }
 
-    if ($day > 0) {
-        $d_time = $day;
-    } else {
-        $d_time = round(($mission['e_unix'] - $mission['s_unix']) / (3600000 * 24), 0) + 1;
-    }
-    ?>
     <div class="factor_detail">
-        <table style="width:100%">
-            <td>عنوان</td>
-            <td>تعداد</td>
-            <td>مبلغ(ریال)</td>
-            <td>جمع(ریال)</td>
-            </tr>
-            <tr>
-                <td>هزینه اسکان</td>
-                <td><?php echo $n_time; ?> شب</td>
-                <td><?php echo sep3($mission['eskan']); ?></td>
-                <td><?php echo sep3($mission['home']); ?></td>
-            </tr>
-            <tr>
-                <td>هزینه خوراک</td>
-                <td><?php echo $d_time; ?> روز</td>
-                <td><?php echo sep3($mission['khorak']); ?></td>
-                <td><?php echo sep3($mission['food']); ?></td>
-            </tr>
-            <tr>
-                <td>ایاب و ذهاب </td>
-                <td><?php echo (round(($mission['travel'] / $mission['ayab']), 0)); ?> کیلومتر</td>
-                <td><?php echo sep3($mission['ayab']); ?></td>
-                <td><?php echo sep3($mission['travel']); ?></td>
-            </tr>
-            <tr>
-                <td>سایر</td>
-                <td>-</td>
-                <td>-</td>
-                <td><?php echo sep3($mission['extra_add']); ?> ریال</td>
-            </tr>
-            <tr style="background: #141414; color: #fff;">
-                <td colspan="3">جمع کل(ریال)</td>
-                <td><?php echo sep3($mission['travel'] + $mission['food'] + $mission['home'] + $mission['extra_add']); ?></td>
-            </tr>
-        </table>
+        <span>مبلغ: <span class="bold"><?php echo sep3($mission['home']); ?> ریال</span></span>
+        <span><span class="bold"><?php echo $number->numberToWords($mission['home']); ?> ریال</span></span>
     </div>
     <div class="factor_detail">
         <table style="width:100%">
             <tr>
-                <td class="shaba bold">شبا</td>
-                <td class="shaba" style="padding: 0;font-size: 1rem;font-weight: bold;">IR<?php echo substr($users[5], 0, 2) . "\t" . substr($users[5], 2, 4) . "\t" . substr($users[5], 6, 4) . "\t" . substr($users[5], 10, 4) . "\t" . substr($users[5], 14, 4) . "\t" . substr($users[5], 18, 4) . "\t" . substr($users[5], 22, 2) . "\t"; ?></td>
-                <td class="shaba"><img src="../img/bank/<?php echo $bank; ?>.jpg" style="width:3rem" /></td>
+                <td class="shaba bold" style="text-align:right">مساعده های قبلی:</td>
+            </tr>
+            <tr>
+                <th style='text-align:center;'>شماره سند</th>
+                <th style='text-align:center;'>تاریخ</th>
+                <th style='text-align:center;'>مبلغ</th>
+                <th style='text-align:center;'>وضعیت</th>
+            </tr>
+            <?php last_donate($mission['u_id']); ?>
+            <tr style="background: #000; color: #fff;">
+                <td colspan="2">جمع مساعده های قبل: </td>
+                <td colspan="2"><?php echo sep3($sum_); ?> ریال</td>
             </tr>
         </table>
     </div>
@@ -493,9 +575,10 @@ switch ($_GET['type']) {
     }
     ?>
     <input type="hidden" value="<?php echo $type; ?>" id="print_pos" />
+
     <script>
         function super_accept(id) {
-            var elan = parseInt(prompt('کد تایید را وارد کنید'));
+            var elan = parseInt(prompt(' کد تایید را وارد کنید'));
             if (elan > 0) {
                 $.ajax({
                     type: "GET",
@@ -567,7 +650,7 @@ switch ($_GET['type']) {
                     url: 'https://perfumeara.com/webapp/app_new/server.php',
                     success: function(result) {
                         if (result == 1) {
-                            alert('فاکتور با موفقیت تایید شد');
+                            alert('مرخصی با موفقیت تایید شد');
                             window.location.reload();
                         } else if (result == 0) {
                             alert('کد وارد شده دسترسی تایید مدیریت را ندارد');

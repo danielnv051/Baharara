@@ -174,4 +174,10 @@ if (isset($_POST['type']) && $_POST['type'] == 'register') {
         $_GET['reason'],
     );
     echo $xx;
+} elseif (isset($_GET['donate'])) {
+    $xx = new_donate(
+        $_GET['donate'],
+        $_GET['fee']
+    );
+    echo $xx;
 }

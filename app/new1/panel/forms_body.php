@@ -35,9 +35,12 @@
                                     <?php include_once('mission_table.php'); ?>
                                     <br />
                                     <?php include_once('rest_table.php'); ?>
+                                    <br />
+                                    <?php include_once('donate_table.php'); ?>
 
                                     <input type="hidden" id="m_count" value="<?php echo $c_m; ?>" />
                                     <input type="hidden" id="r_count" value="<?php echo $c_m_; ?>" />
+                                    <input type="hidden" id="d_count" value="<?php echo $c_m__; ?>" />
                                     <table style="text-align: center;display:none;float: right;border: 1px solid #000;margin-bottom:0.5rem;margin-top:0.5rem">
 
                                     </table>
@@ -80,6 +83,8 @@
         <script>
             $('#mission_count').text($('#m_count').val());
             $('#rest_count').text($('#r_count').val());
+            $('#donate_count').text($('#d_count').val());
+
             let g = $('#g').val();
             let tarikh = $('#tarikh').val();
             let masir = 'https://perfumeara.com/webapp/app_new/panel/forms.php?date=' + tarikh + '&g=' + g;

@@ -260,34 +260,34 @@ function order_info($zaman)
         if ($x == '99') {
             $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `del_pos`=0 ORDER BY `id` desc";
         } elseif ($GLOBALS['line'] == 5) {
-            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` = 300 AND `del_pos`!=1 ORDER BY `id` desc";
+            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` = 300 AND `del_pos`=0 ORDER BY `id` desc";
         } elseif ($GLOBALS['line'] == '**') {
             $sss = "SELECT * FROM customers WHERE permit = '" . $permit . "'";
             $rrr = mysqli_query($GLOBALS['conn'], $sss);
             if ($rrr) {
                 $www = mysqli_fetch_assoc($rrr);
                 $u_id = $www['uid'];
-                $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` ='" . $u_id . "'  AND `del_pos`!=1 ORDER BY `id` desc";
+                $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` ='" . $u_id . "'  AND `del_pos`=0 ORDER BY `id` desc";
             }
         } else {
-            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` != '100' AND `uid` != '200' AND `uid` != '300' AND `uid`!=22 AND `del_pos`!=1 ORDER BY `id` desc";
+            $sql = "SELECT * FROM `cbd` WHERE `login` LIKE '%" . $zaman . "%' AND `uid` != '100' AND `uid` != '200' AND `uid` != '300' AND `uid`!=22 AND `del_pos`=0 ORDER BY `id` desc";
         }
     } else {
         $zamani = '2401210000000000000000';
         if ($x == '99') {
-            $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " ORDER BY `id` desc";
+            $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `del_pos`=0 ORDER BY `id` desc";
         } elseif ($GLOBALS['line'] == 5) {
-            $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` = 300 AND `del_pos`!=1 ORDER BY `id` desc";
+            $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` = 300 AND `del_pos`=0 ORDER BY `id` desc";
         } elseif ($GLOBALS['line'] == '**') {
             $sss = "SELECT * FROM customers WHERE permit = '" . $permit . "'";
             $rrr = mysqli_query($GLOBALS['conn'], $sss);
             if ($rrr) {
                 $www = mysqli_fetch_assoc($rrr);
                 $u_id = $www['uid'];
-                $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` ='" . $u_id . "'  AND `del_pos`!=1 ORDER BY `id` desc";
+                $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` ='" . $u_id . "'  AND `del_pos`=0 ORDER BY `id` desc";
             }
         } else {
-            $sql = "SELECT * FROM `cbd` WHERE `factor_id` > " . $zamani . " AND `uid` != '100' AND `uid` != '200' AND `uid` != '300' AND `del_pos`!=1 ORDER BY `id` desc";
+            $sql = "SELECT * FROM `cbd` WHERE `factor_id` > '" . $zamani . "' AND `uid` != '100' AND `uid` != '200' AND `uid` != '300' AND `del_pos`=0 ORDER BY `id` desc";
         }
     }
 

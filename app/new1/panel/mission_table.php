@@ -1,6 +1,6 @@
-<table style="margin: 0 auto;" class="mamoriat">
+<table style="margin: 0 auto;width: 90%;" class="mamoriat">
     <tr style="background: #4DB6AC; color: #353535;font-weight:bold">
-        <td style="cursor:pointer" colspan="11" onclick="toggle('mamoriat')">فرم ماموریت (<span id="mission_count"></span>عدد)</td>
+        <td style="cursor:pointer" colspan="11" onclick="toggle('mamoriat')">فرم ماموریت</td>
     </tr>
     <tr id="first_row">
         <td>ردیف</td>

@@ -2166,3 +2166,37 @@ function check_mojudi($prod_id)
 
     return $new . ',' . $tedad;
 }
+
+function get_factor_info($prefactor)
+{
+    db();
+    $s = "SELECT * FROM `allfactors` WHERE `prefactor` = '" . $prefactor . "'";
+    $w = mysqli_query($GLOBALS['conn'], $s);
+    return $w;
+}
+function get_factor_info1($factor)
+{
+    db();
+    $s = "SELECT * FROM `anbar` WHERE `desc` LIKE '%" . $factor . "%'";
+    $w = mysqli_query($GLOBALS['conn'], $s);
+    return $w;
+}
+
+function new_donate($mission_name, $fee)
+{
+    db();
+    $uid = $_COOKIE['uid'];
+    $date = date("Y-m-d H:i:s");
+    $timestamp = strtotime($date);
+    $jalali_date = jdate("Y/m/d", $timestamp);
+
+    $sql = "INSERT INTO `mission`(`id`,`uid`,`mission_name`,`date`,`start_fa`,`home`,`type`) 
+    VALUES(NULL, '" . $uid . "','" . $mission_name . "','" . $date . "','" . $jalali_date . "','" . $fee . "',3)";
+    $r = mysqli_query($GLOBALS['conn'], $sql);
+
+    if ($r) {
+        return 1;
+    } else {
+        return 0;
+    }
+}

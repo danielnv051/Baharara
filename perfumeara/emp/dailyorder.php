@@ -183,8 +183,12 @@ function order_id($zaman, $baze = false)
                 'YZD' => 'یزد',
                 'KRN' => 'کرمان',
                 'KHZ' => 'اهواز',
+                'KRD' => 'کردستان',
                 'EAZ' => 'آذربایجان شرقی',
                 'WAZ' => 'آذربایجان غربی',
+                'ADL' => 'اردبیل',
+                'BHR' => 'بوشهر',
+                'KBD' => 'کهگیلویه و بویر احمد'
             ];
 
             $GLOBALS['sum'] += ($order_data['_order_total'] * 10);
@@ -239,6 +243,16 @@ function order_id($zaman, $baze = false)
     <script src="./js/jquery.min.js"></script>
     <script src="./js/public.js"></script>
     <style>
+        @font-face {
+            font-family: 'iransans';
+            src: url('./fonts/IRANSansWeb\(FaNum\).ttf');
+        }
+
+        * {
+            font-family: 'iransans';
+
+        }
+
         table {
             text-align: center;
         }
@@ -269,7 +283,20 @@ function order_id($zaman, $baze = false)
         form {
             margin: 0 auto;
         }
+
+        .container {
+            width: 100%;
+        }
+
+        .range-from-example.pwt-datepicker-input-element {
+            width: 30%;
+            margin: 1rem auto;
+        }
     </style>
+
+    <link rel="stylesheet" href="../webapp/app2/static/css/lib/persian-datepicker.min.css" />
+    <link rel="stylesheet" href="../webapp/app2/static/css/main.css" />
+
 </head>
 
 <body class="login-area">
@@ -305,7 +332,7 @@ function order_id($zaman, $baze = false)
     ******* Page Wrapper Area Start **********
     ======================================= -->
     <div class="main-content- h-100vh">
-        <div class="container h-100">
+        <div class="container h-100" style="width:100%">
             <!--             <div class="ba-logo" style="text-align: center;">
                 <img src="../img/logo-ba.png" title="logo" id="logo"
                     style="max-width: 100px; height: auto; background: #01815f; border-radius: 50%; box-shadow: 0px 0px 6px #01815f4f; padding: 1rem;" />
@@ -355,7 +382,7 @@ function order_id($zaman, $baze = false)
                                     }
                                     ?>
                                     <tr>
-                                        <td colspan="8">
+                                        <td colspan="9" style="font-weight: bold;">
                                             جمع کل: <?php echo sep3($sum); ?> ریال
                                         </td>
                                     </tr>
@@ -363,10 +390,18 @@ function order_id($zaman, $baze = false)
 
 
                                 <!-- end card -->
-                            </div>
+                            </div><br />
                             <div class="row">
                                 <form method="get" action="dailyorder.php">
-                                    <label>تاریخ مورد نظر را وارد کنید: <input type="date" name="date" id="day" class="form-control"> </label>
+                                    <label>تاریخ مورد نظر را انتخاب کنید: </label>
+
+                                    <a class="btn btn-info btn-return v3 toggle_from">
+                                        <input id="start_from_en" name="date" style="display:none"></span>
+                                        <span id="start_unix" style="display:none"></span>
+                                        </h5>
+                                    </a>
+                                    <div class="range-from-example"></div>
+
                                     <button type="submit" class="btn btn-warning">نمایش</button>
                                     <button><a href="https://perfumeara.com/emp/label.php?date=<?php echo $_GET['date']; ?>" class="btn btn-primary">دانلود لیبل</a></button>
                                 </form>
@@ -397,6 +432,86 @@ function order_id($zaman, $baze = false)
     <!-- Active JS -->
     <script src="./js/default-assets/active.js"></script>
 
+    <script src="../webapp/app2/static/js/lib/persian-date.min.js"></script>
+    <script src="../webapp/app2/static/js/lib/persian-datepicker.min.js"></script>
+
+    <script>
+        $(' .toggle_from').click(function() {
+            $(".range-from-example").toggle(500);
+            $(".range-to-example").hide(500);
+            $('.month-grid-box .header').hide();
+        });
+        $('.toggle_to').click(function() {
+            $(".range-from-example").hide(500);
+            $(".range-to-example").toggle(500);
+            $('.month-grid-box .header').hide();
+        });
+        var to, from;
+        to = $(".range-to-example").persianDatepicker({
+            inline: true,
+            altField: '.range-to-example-alt',
+            altFormat: 'LLLL',
+            initialValue: false,
+            onSelect: function(unix) {
+                $('#end_unix').text(unix);
+                const d = new Date(unix);
+                var year = d.getFullYear();
+                var month = ("0" + (d.getMonth() + 1)).slice(-2);
+                var rooz = ("0" + d.getDate()).slice(-2);
+                $.ajax({
+                    data: 'zaman=' + year + '-' + month + '-' + rooz,
+                    url: 'server.php',
+                    type: 'POST',
+                    success: function(result) {
+                        $('#end_to_fa').text(result);
+                        $('#end_to_en').text(year + '-' + month + '-' + rooz);
+                    }
+                });
+                to.touched = true;
+                if (from && from.options && from.options.maxDate != unix) {
+                    var cachedValue = from.getState().selected.unixDate;
+                    from.options = {
+                        maxDate: unix
+                    };
+                    if (from.touched) {
+                        from.setDate(cachedValue);
+                    }
+                }
+            }
+        });
+        from = $(".range-from-example").persianDatepicker({
+            inline: true,
+            altField: '.range-from-example-alt',
+            altFormat: 'LLLL',
+            initialValue: false,
+            onSelect: function(unix) {
+                $('#start_unix').text(unix);
+                const d = new Date(unix);
+                var year = d.getFullYear();
+                var month = ("0" + (d.getMonth() + 1)).slice(-2);
+                var rooz = ("0" + d.getDate()).slice(-2);
+                $.ajax({
+                    data: 'zaman=' + year + '-' + month + '-' + rooz,
+                    url: 'server.php',
+                    type: 'POST',
+                    success: function(result) {
+                        $('#start_from_fa').text(result);
+                        $('#start_from_en').val(year + '-' + month + '-' + rooz);
+                    }
+                });
+                from.touched = true;
+                if (to && to.options && to.options.minDate != unix) {
+                    var cachedValue = to.getState().selected.unixDate;
+                    to.options = {
+                        minDate: unix
+                    };
+                    if (to.touched) {
+                        to.setDate(cachedValue);
+                    }
+                }
+            }
+        });
+    </script>
 
 </body>
 

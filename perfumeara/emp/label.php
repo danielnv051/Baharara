@@ -35,6 +35,12 @@ function order_id($zaman)
                 }
             }
 
+            if (isset($order_data['_shipping_address_2']) && strlen($order_data['_shipping_address_2']) > 0) {
+                $addr2 = $order_data['_shipping_address_2'];
+            } else {
+                $addr2 = '';
+            }
+
             $state = [
                 'FRS' => 'فارس',
                 'ESF' => 'اصفهان',
@@ -60,15 +66,19 @@ function order_id($zaman)
                 'YZD' => 'یزد',
                 'KRN' => 'کرمان',
                 'KHZ' => 'اهواز',
+                'KRD' => 'کردستان',
                 'EAZ' => 'آذربایجان شرقی',
                 'WAZ' => 'آذربایجان غربی',
+                'ADL' => 'اردبیل',
+                'BHR' => 'بوشهر',
+                'KBD' => 'کهگیلویه و بویر احمد'
             ];
 
             $data[] = [
                 "نام" => $order_data['_shipping_first_name'] . ' ' . $order_data['_shipping_last_name'],
                 "استان" => $state[$order_data['_shipping_state']],
                 "شهر" => $order_data['_shipping_city'],
-                "آدرس" => $order_data['_shipping_address_1'],
+                "آدرس" => $order_data['_shipping_address_1'] . ' ' . $addr2,
                 "تلفن" => $order_data['_billing_phone'],
                 "کد پستی" => $order_data['_shipping_postcode']
             ];

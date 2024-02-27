@@ -326,7 +326,7 @@ if (isset($sign_[3]) && $sign_[3] > 0) {
             <img src="../../app1/img/users/<?php echo $mission['u_id']; ?>.jpg" style="width: 48px;" />
         </div>
         <div class="info bold">
-            برگه مرخصی
+            فرم مرخصی
         </div>
         <div class="logos">
             <img src="https://perfumeara.com/webapp/app1/img/users/200.jpg" style="width: 4rem" />
